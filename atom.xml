@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>lwhile.github.io</id>
     <title>神蛋杂谈</title>
-    <updated>2019-12-14T15:41:09.106Z</updated>
+    <updated>2019-12-14T15:45:10.129Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="lwhile.github.io"/>
     <link rel="self" href="lwhile.github.io/atom.xml"/>
@@ -95,6 +95,49 @@ return time.Date(1,1,t.Day(), t.Hour() ...)<br>
 <p>香港日佔時期，又稱為香港日治時期或香港淪陷時期，是指第二次世界大戰時大日本帝國軍事占領香港的時期：由1941年12月25日香港總督楊慕琦投降起，至1945年8月15日日本無條件投降為止；香港人俗稱這段時期為「三年零八個月」。</p>
 </blockquote>
 <p>别以为 Go 的开发团队这么有心，实际上 Go 也是读操作系统的 zoneinfo 文件。只能说在某个层面上操作系统也记录着每个地区的历史。。。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[指数退避]]></title>
+        <id>lwhile.github.io/post/exponential-backoff</id>
+        <link href="lwhile.github.io/post/exponential-backoff">
+        </link>
+        <updated>2018-04-02T15:41:39.000Z</updated>
+        <content type="html"><![CDATA[<p>这是加入新公司后的第一篇技术博文，主角是一种叫做指数退避的算法。还是按照以往的惯例，这篇文章会从问题的发生至问题的解决记一个流水账。</p>
+<p>问题的场景发生业务系统中的 RPC 调用中，需求是希望如果一个 RPC 调用失败了，能够进行重试。</p>
+<p>作为一个菜鸟，我很快写入了第一个版本，用 Go 语言描述出来的逻辑如下：</p>
+<pre><code class="language-go">func retry(maxRetry int, f func() error) {
+    for i:=0;i&lt;maxRetry;i++ {
+        err := f()
+        if err == nil {
+          return 
+        }
+    }
+}
+</code></pre>
+<p>很快这种代码在 review 的时候就被打下来了。理由是作为网络调用，这种重试机制是不合理的。试想以下如果是遇到机器重启或者网络抖动，对方的服务要在 1 分钟甚至更久之后才能恢复正常，那么将重试放在一个没有停歇的 for 循环里面，试错的机会很快就会被用完。</p>
+<p>mentor 提示我可以试下指数退避算法（exponential backoff），网上看了一些算法的介绍，很快就写了第二个版本出来。</p>
+<p>逻辑还是差不多，只不过多了一步休眠的操作：</p>
+<pre><code class="language-go">func retry(maxRetry int, f func() error) {
+    for i:=0;i&lt;maxRetry;i++ {
+        err := f()
+        if err == nil {
+          return 
+        }
+        // calculate the dynamic duration
+        dur := call()
+
+        time.Sleep(dur)
+    }
+}
+</code></pre>
+<p>算法的核心在于计算出重试的间隔，如果重试失败，那么就要相应得延长下次重试的时间。</p>
+<p>重试间隔计算公式如下：<br>
+sleep = min(cap, base * 2 ** attempt)</p>
+<p>随着重试次数 attempt 的增加，sleep 的数值会出现指数级的变化。</p>
+<p>对于一些服务比如涉及到事务的数据库操作，如果有多个 client 同时使用上面这条公式的话，会出现请求挤压的情况导致系统的整体吞吐量下降，这时候我们可以引入一个随机因子避免该问题，经过修改的公式如下：</p>
+<p>sleep = random_between(0, min(cap, base * 2 ** attempt))</p>
+<p>如果你使用的是Go，推荐下这个库：https://github.com/cenkalti/backoff</p>
 ]]></content>
     </entry>
 </feed>

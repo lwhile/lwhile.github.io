@@ -7,7 +7,7 @@
 <title>
     神蛋杂谈
 </title>
-<link rel="shortcut icon" href="lwhile.github.io/favicon.ico?v=1576338065235">
+<link rel="shortcut icon" href="lwhile.github.io/favicon.ico?v=1576338304665">
 <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
 <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
@@ -27,7 +27,7 @@
     <div class="nav">
         <div class="logo">
             <a href="lwhile.github.io">
-                <img class="avatar" src="lwhile.github.io/images/avatar.png?v=1576338065235" alt="">
+                <img class="avatar" src="lwhile.github.io/images/avatar.png?v=1576338304665" alt="">
             </a>
             <div class="site-title">
                 <h1>
@@ -112,7 +112,7 @@
         </a>
                         
                         <a href="lwhile.github.io/tag/5UKnY2CH9d" class="post-tag i-tag
-                            i-tag-banana">
+                            i-tag-error">
             #Go
         </a>
                         
@@ -210,6 +210,69 @@ fmt.Println(t) // 1942-10-30 00:00:00 +0900 JST
                 </div>
             </article>
             
+            <article class="post i-card">
+                <h2 class="post-title">
+                    <a href="lwhile.github.io/post/exponential-backoff">
+                        指数退避
+                    </a>
+                </h2>
+                <div class="post-info">
+                    <time class="post-time">2018-04-02</time>
+                    
+                        <a href="lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
+                            i-tag-warning">
+            #计算机
+        </a>
+                        
+                </div>
+                <div class="post-article">
+                    
+                            <div class="post-content">
+                                
+                                        <div class="post-content-content">
+                                            这是加入新公司后的第一篇技术博文，主角是一种叫做指数退避的算法。还是按照以往的惯例，这篇文章会从问题的发生至问题的解决记一个流水账。
+问题的场景发生业务系统中的 RPC 调用中，需求是希望如果一个 RPC 调用失败了，能够进行重试。
+作为一个菜鸟，我很快写入了第一个版本，用 Go 语言描述出来的逻辑如下：
+func retry(maxRetry int, f func() error) {
+    for i:=0;i&amp;lt;maxRetry;i++ {
+        err := f()
+        if err == nil {
+          return 
+        }
+    }
+}
+
+很快这种代码在 review 的时候就被打下来了。理由是作为网络调用，这种重试机制是不合理的。试想以下如果是遇到机器重启或者网络抖动，对方的服务要在 1 分钟甚至更久之后才能恢复正常，那么将重试放在一个没有停歇的 for 循环里面，试错的机会很快就会被用完。
+mentor 提示我可以试下指数退避算法（exponential backoff），网上看了一些算法的介绍，很快就写了第二个版本出来。
+逻辑还是差不多，只不过多了一步休眠的操作：
+func retry(maxRetry int, f func() error) {
+    for i:=0;i&amp;lt;maxRetry;i++ {
+        err := f()
+        if err == nil {
+          return 
+        }
+        // calculate the dynamic duration
+        dur := call()
+
+        time.Sleep(dur)
+    }
+}
+
+算法的核心在于计算出重试的间隔，如果重试失败，那么就要相应得延长下次重试的时间。
+重试间隔计算公式如下：
+sleep = min(cap, base * 2 ** attempt)
+随着重试次数 attempt 的增加，sleep 的数值会出现指数级的变化。
+对于一些服务比如涉及到事务的数据库操作，如果有多个 client 同时使用上面这条公式的话，会出现请求挤压的情况导致系统的整体吞吐量下降，这时候我们可以引入一个随机因子避免该问题，经过修改的公式如下：
+sleep = random_between(0, min(cap, base * 2 ** attempt))
+如果你使用的是Go，推荐下这个库：https://github.com/cenkalti/backoff
+
+                                        </div>
+                                        
+                                            <a class="btn btn-text" href="lwhile.github.io/post/exponential-backoff">Read More ~</a>
+                            </div>
+                </div>
+            </article>
+            
                 <!-- 翻页 -->
                 
                 </div>
@@ -221,7 +284,7 @@ fmt.Println(t) // 1942-10-30 00:00:00 +0900 JST
                     <!-- 个人信息 -->
                     
     <div class="id_card i-card">
-        <div class="id_card-avatar" style="background-image: url(lwhile.github.io/images/avatar.png?v=1576338065235)">
+        <div class="id_card-avatar" style="background-image: url(lwhile.github.io/images/avatar.png?v=1576338304665)">
         </div>
         <h1 class="id_card-title">
             神蛋杂谈
