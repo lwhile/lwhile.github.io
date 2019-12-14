@@ -1,0 +1,363 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>
+    Go语言究竟不一样在哪 | 神蛋杂谈
+</title>
+<link rel="shortcut icon" href="https://lwhile.github.io/favicon.ico?v=1576340011064">
+<!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
+<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://lwhile.github.io/styles/main.css">
+<!-- js -->
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://lwhile.github.io/media/js/jquery.sticky-sidebar.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+
+        
+</head>
+
+<body>
+    <div class="main">
+        <div class="header">
+    <div class="nav">
+        <div class="logo">
+            <a href="https://lwhile.github.io">
+                <img class="avatar" src="https://lwhile.github.io/images/avatar.png?v=1576340011064" alt="">
+            </a>
+            <div class="site-title">
+                <h1>
+                    神蛋杂谈
+                </h1>
+            </div>
+        </div>
+        <span class="menu-btn fa fa-align-justify"></span>
+        <div class="menu-container">
+            <ul>
+                
+                    
+                            <li>
+                                <a href="/" class="menu">
+                                    首页
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/archives" class="menu">
+                                    归档
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/tags" class="menu">
+                                    标签
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/post/about" class="menu">
+                                    关于
+                                </a>
+                            </li>
+                            
+                                
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $(".menu-btn").click(function() {
+            $(".menu-container").slideToggle();
+        });
+        $(window).resize(function() {
+
+            if (window.matchMedia('(min-width: 960px)').matches) {
+                $(".menu-container").css('display', 'block')
+            } else {
+                $(".menu-container").css('display', 'none')
+            }
+
+        });
+    });
+</script>
+
+            <div id="main-content" class="post-detail main-container">
+                <!-- left -->
+                <div id="content" class="main-container-left">
+                    <article class="post i-card">
+                        <h2 class="post-title">
+                            Go语言究竟不一样在哪
+                        </h2>
+                        <div class="post-info">
+                            <time class="post-time">2017-11-13</time>
+                            
+                                <a href="https://lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
+                            i-tag-other_2">
+                            #计算机
+                        </a>
+                                
+                                <a href="https://lwhile.github.io/tag/5UKnY2CH9d" class="post-tag i-tag
+                            i-tag-error">
+                            #Go
+                        </a>
+                                
+                        </div>
+                        
+                            <div class="post-feature-image" style="background-image: url('https://lwhile.github.io/post-images/why-go-so-different.png')"></div>
+                            
+                                <div class="post-content">
+                                    <p>第一次听到Go语言是在什么时间已经想不起来了。</p>
+<p>我是14年进入的大学，在15年面试校内一个技术组织时，被问了解哪些服务端语言。那时候我提到了Go。不过正式把它列入学习计划，还要等到16年的十月份。后来在17年三月份出来实习使用Go做开发，才有更多的机会将它投入实践中。</p>
+<p>在Go语言之前，我学习了C，C++， Java，Python。Go语言是唯一一门我认为自己能算得上掌握的语言。</p>
+<p>这门语言最与众不同的地方在于，将写并发型的代码变得异常容易。另一个能在简洁程度（指并发）上能和它一比的，大概只有Actor世界里的Erlang/Elixir了。</p>
+<p>在继续介绍Go之前我觉得有必要提下它的老爹。不过我要说的不是谷歌(Go最开始是谷歌的内部项目)，而是计算机领域的那三尊神。</p>
+<p>Ken Thompson</p>
+<p>Rob Pike</p>
+<p>Robert Griesemer</p>
+<p>如果你知道C语言的作者叫做Dennis Ritchie，并且看过它的一张图片，就是这张：<br>
+<img src="http://upload-images.jianshu.io/upload_images/1244770-b4139e59247921a6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<blockquote>
+<p>你应该对这两位老头有印象，很多介绍C语言或者计算机导论的书都有这张照片。右边那位就是Dennis Ritchie，2011年他已经驾鹤西去，在他离世前的一个星期，地球上另一个传奇也走了，他叫做史蒂夫・乔布斯。那一年我刚考上高中，乔布斯走后凡客出了一件纪念衫和一本他的传记，我都买了，现在还留着。</p>
+</blockquote>
+<p>左边那位，就是另外的一尊神，Ken Thompson。Unix知道吧？他最先设计和实现出来的（我说最初的几个Unix版本内核是汇编写的你信吗？）C语言的前身—— B语言，他弄的。Plan9，他参与了。正则表达式和UTF-8编码的设计，他也凑了一脚。在大牛这个称谓泛滥的今天，我只能用神这个字去形容我的这位偶像了。</p>
+<p>UTF-8还有另外一个发明者，和Ken一样也是Unix的成员，他就是目前Go语言的实际控制者，Rob Pike。你不一定会写Go代码，但你一定对Go那个萌贱萌贱的Logo有印象，这个Logo就是由Rob Pike的老婆设计的。<br>
+<img src="http://upload-images.jianshu.io/upload_images/1244770-24024501bee66802.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>最后一尊神，Robert Griesemer，手握几个个赫赫有名的项目，其中两个每天都会有一大波程序员它们打交道。这两个项目就是V8和JVM。Go 1.3之后改变了GC的工作机制，据说就是由他操刀。</p>
+<p>三位大神介绍完了，最终我想说的是，Go多多少少会凝聚他们三位在编程方面的宝贵经验，当初也是因为这一点我才会坚定得学习它，虽然我知道可能毕业的时候找不到一份Go这样一门新兴语言的工作。</p>
+<p>好了，题外话不继续了，接下来开始列举Go的一些特性。</p>
+<h2 id="1-goroutine">1. goroutine</h2>
+<p>目前在并发编程领域，我们有3种最基本的模型选择。</p>
+<p>第一种，即多进程/线程模型，这也是C/C++，Java最常用的并发模式。这种模型的好处是因为操作系统的原生支持，语言的实现者不用考虑其调度问题，交给操作系统就行了。但缺点就是会在并发数上升到一定程度后，系统需要将时间片更多花在进程/线程的上下文切换上。Linux默认的线程栈空间大小是1MB, 开一个1000个进程什么也不干，就需要接近1G的内存空间了。</p>
+<p>第二种，是事件驱动机制，典型如Nginx和Node。我们都知道Nginx和Node扛并发的能力很强，但实际上占用的资源却极少，很大一部分将所有的事件通过一些特殊的数据结构（如红黑树）组织起来，等到事件发生的时候再放到一个单一的进程/线程去处理。这个模型只适合IO密集型的工作场景，因为事件驱动的本质只是充分利用起CPU的空闲时间。</p>
+<p>第三种，就是Go使用的模型，协程模型，和Python，Lua，Erlang/Elixir里面的协程是同一个东西，只不过在Erlang/Elixir里面叫做process，Go里面叫做goroutine。我们知道线程比进程轻量，而协程则比线程更加轻量化。在Go里面，一个协程所占用的基本空间是2KB，只有线程的1/512。换句话说，起1000个空跑的goroutine，大概需要2MB的内存，而起1000个线程，则需要接近1GB。更低的内存占用，意味着可以开更多的并发单位，以及消耗更少的上下文切换时间。</p>
+<p>可以看一个简单的例子：</p>
+<pre><code class="language-go">func ShotOut() {
+	// 休眠1秒钟
+	time.Sleep(time.Second)
+
+	// 向控制台抵茶
+	fmt.Println(&quot;给大佬抵茶&quot;)
+}
+
+func main() {
+	for i := 0; i &lt; 5; i++ {
+		// 起5个goroutine
+		go ShotOut()
+	}
+
+	// 别让main退出，作用类似C里面的getchar()
+	select {}
+}
+</code></pre>
+<p>如果没有使用并发，那么执行这个程序需要5s，但实际执行时间会在1s左右，这证明我们调用ShotOut函数的时候确实是并发了。</p>
+<p>如果 Go 只是像 Python 或者Lua那样简单得引入了协程，那么它绝对不可能有今天的地位。Go的开发团队最伟大的地方在于，他们赋予了Go的runtime调度goroutine的能力，就像Linux内核调度线程那样。正是这一点，才让我们编写并发代码变得更加简单。</p>
+<h2 id="2channel">2.channel</h2>
+<p>说完goroutine，还有一个与它配合使用特性叫channel，可以说这两个特性加起来就锻造成了Go的屠龙宝刀。</p>
+<p>上面的例子中起了5个goroutine，这5个并发单位都比较简单，彼此之间不需要通信。如果需要呢？channel就是用于相互隔离间的并发单位进行通信的一个消息队列。</p>
+<p>看一个简单的例子：</p>
+<pre><code class="language-go">func main() {
+	// 声明一个存放int类型的channel
+	ch := make(chan int)
+
+	go func() {
+		// 休眠1秒钟
+		time.Sleep(time.Second)
+
+		// 向channel写入整数1
+		ch &lt;- 1
+	}()
+
+	go func() {
+		// 等待从通道中取出内容
+		res := &lt;-ch
+		fmt.Println(res) // 1s后输出1
+	}()
+
+	// 别让main退出，作用类似C里面的getchar()
+	select {}
+}
+</code></pre>
+<p>我们对最上面的例子改下需求，要求第一个goroutine执行完毕后，才能继续执行另外两个。第二波执行的这两个goroutine执行完毕后，才能执行最后剩下的2个gourotine。下面是Go的实现，大家可以想下如果用C++或者Java要如何写：</p>
+<pre><code class="language-go">func ShotOut() {
+	// 休眠1秒钟
+	time.Sleep(time.Second)
+
+	// 向控制台抵茶
+	fmt.Println(&quot;给大佬抵茶&quot;)
+}
+
+func main() {
+	// 声明两个存放int类型的channel
+	ch1 := make(chan int)
+	ch2 := make(chan int)
+
+	go func() {
+		// 休眠1秒钟
+		time.Sleep(time.Second)
+
+		// 第1次跑抵茶函数
+		ShotOut()
+
+		// 抵完第1杯茶，向channel写入整数1
+		ch1 &lt;- 1
+	}()
+
+	go func() {
+		// 等待第1杯茶递完的信号
+		&lt;-ch1
+
+		// 收到信号，开始抵第2和递3杯茶
+		ShotOut()
+		ShotOut()
+
+		// 通知最后2个
+		ch2 &lt;- 1
+	}()
+
+	go func() {
+		// 等待第2和第3杯茶递完
+		&lt;-ch2
+
+		// 递最后两杯
+		ShotOut()
+		ShotOut()
+	}()
+
+	// 别让main退出，作用类似C里面的getchar()
+	select {}
+}
+</code></pre>
+<blockquote>
+<p>注意加了go关键字在面前的函数都会以并发的方式进行</p>
+</blockquote>
+<h2 id="3-无依赖运行">3. 无依赖运行</h2>
+<p>如果说上面那两个特性要在并发环境下才能体现用处，那么Go可以编译成一个完成无依赖的二进制这一功能，是真的能大大提升你编程的意愿：因为你写的东西很容易传播给别人。</p>
+<p>就拿能向浏览器输出Hello World的Web程序来举例子好了</p>
+<pre><code class="language-go">pakcage main 
+
+import &quot;fmt&quot;
+import &quot;net/http&quot;
+
+func HelloWorld(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(&quot;Hello World&quot;))
+}
+
+func main() {
+	http.HandleFunc(&quot;/&quot;, HelloWorld)
+	http.ListenAndServe(&quot;:8080&quot;, nil)
+}
+</code></pre>
+<p>是的，你没看错，就这简单几句代码，跑起来它就是一个Web服务。而且通过 go build 命令编译后，将生成的二进制直接丢到服务器上就能跑了，Linux，Mac OS，Windows三平台都能用，而且性能非常强！想想如果是Java或者Python, Go的程序已经丢到服务器在跑了，Java的进度条可能还处在配置Tomcat上，Python则还在配置gunico和supervisor...</p>
+<h3 id="最后">最后</h3>
+<p>上面提到的三个特性，我觉得已经够向没了解过Go的用户介绍清楚他最与众不同的地方了。还有其他几个特性，比如非侵入性的接口，抛弃面相对象模型，多返回值，闭包等，这些相比其他语言我倒觉得不是其最大的亮点，留到以后有时间再介绍吧，这篇文章就已经写了我两个晚上了...</p>
+
+                                </div>
+                    </article>
+                    <!--  -->
+                    
+                        <div class="next-post">
+                            <div class="next">下一篇</div>
+                            <a href="https://lwhile.github.io/post/litter-memory-2017">
+                                <h3 class="post-title">
+                                    打个小卡
+                                </h3>
+                            </a>
+                        </div>
+                        
+                            <div id="disqus_thread"></div>
+                            <div id="gitalk-container"></div>
+                </div>
+                <!-- middle -->
+                <div class="main-container-middle"></div>
+                <!-- right -->
+                <div id="sidebar" class="main-container-right">
+                    
+                        <!-- toc -->
+                        
+    <div class="toc-card i-card ">
+        <div class="toc-title i-card-title">目录</div>
+        <div class="toc-content">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#1-goroutine">1. goroutine</a></li>
+<li><a href="#2channel">2.channel</a></li>
+<li><a href="#3-%E6%97%A0%E4%BE%9D%E8%B5%96%E8%BF%90%E8%A1%8C">3. 无依赖运行</a>
+<ul>
+<li><a href="#%E6%9C%80%E5%90%8E">最后</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+        <script>
+            function locateCatelogList() {
+                /*获取文章目录集合,可通过:header过滤器*/
+                var alis = $('.post-content :header');
+                /*获取侧边栏目录列表集合**/
+                var sidebar_alis = $('.markdownIt-TOC a');
+                /*获取滚动条到顶部的距离*/
+                var scroll_height = $(window).scrollTop();
+                for (var i = 0; i < alis.length; i++) {
+                    /*获取锚点集合中的元素分别到顶点的距离*/
+                    var a_height = $(alis[i]).offset().top;
+                    if (a_height < scroll_height) {
+                        /*高亮显示*/
+                        sidebar_alis.removeClass('on');
+                        $(sidebar_alis[i]).addClass('on');
+                    }
+                }
+            }
+            $(function() {
+                /*绑定滚动事件 */
+                $(window).bind('scroll', locateCatelogList);
+            });
+        </script>
+    </div>
+    
+                            
+
+                </div>
+
+
+
+
+            </div>
+
+
+            <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://lwhile.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+    <script>
+        $('#sidebar').stickySidebar({
+            topSpacing: 80,
+            // bottomSpacing: 60
+        });
+    </script>
+    
+</body>
+
+</html>
