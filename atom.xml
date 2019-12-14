@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-    <id>lwhile.github.io</id>
+    <id>http://localhost:4000</id>
     <title>神蛋杂谈</title>
-    <updated>2019-12-14T16:01:49.624Z</updated>
+    <updated>2019-12-14T16:02:13.369Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="lwhile.github.io"/>
-    <link rel="self" href="lwhile.github.io/atom.xml"/>
-    <logo>lwhile.github.io/images/avatar.png</logo>
-    <icon>lwhile.github.io/favicon.ico</icon>
+    <link rel="alternate" href="http://localhost:4000"/>
+    <link rel="self" href="http://localhost:4000/atom.xml"/>
+    <logo>http://localhost:4000/images/avatar.png</logo>
+    <icon>http://localhost:4000/favicon.ico</icon>
     <rights>All rights reserved 2019, 神蛋杂谈</rights>
     <entry>
         <title type="html"><![CDATA[致开发人员]]></title>
-        <id>lwhile.github.io/post/for-developer</id>
-        <link href="lwhile.github.io/post/for-developer">
+        <id>http://localhost:4000/post/for-developer</id>
+        <link href="http://localhost:4000/post/for-developer">
         </link>
         <updated>2019-11-06T15:47:49.000Z</updated>
         <content type="html"><![CDATA[<p>「软技能:代码之外的生存指南」在开头部分有几句话,我看了之后觉得很棒,于是摘抄下来激励自己.</p>
@@ -31,8 +31,8 @@
     </entry>
     <entry>
         <title type="html"><![CDATA[Go 时区用法总结]]></title>
-        <id>lwhile.github.io/post/go-timezone</id>
-        <link href="lwhile.github.io/post/go-timezone">
+        <id>http://localhost:4000/post/go-timezone</id>
+        <link href="http://localhost:4000/post/go-timezone">
         </link>
         <updated>2019-02-19T15:31:05.000Z</updated>
         <content type="html"><![CDATA[<p>坊间有个说法，说中美两国的程序员除了薪资、加班强度外，还有个比较有趣的差异，就是在编码时对于时区的敏感程度也不同。</p>
@@ -118,8 +118,8 @@ return time.Date(1,1,t.Day(), t.Hour() ...)<br>
     </entry>
     <entry>
         <title type="html"><![CDATA[指数退避]]></title>
-        <id>lwhile.github.io/post/exponential-backoff</id>
-        <link href="lwhile.github.io/post/exponential-backoff">
+        <id>http://localhost:4000/post/exponential-backoff</id>
+        <link href="http://localhost:4000/post/exponential-backoff">
         </link>
         <updated>2018-04-02T15:41:39.000Z</updated>
         <content type="html"><![CDATA[<p>这是加入新公司后的第一篇技术博文，主角是一种叫做指数退避的算法。还是按照以往的惯例，这篇文章会从问题的发生至问题的解决记一个流水账。</p>
@@ -161,8 +161,8 @@ sleep = min(cap, base * 2 ** attempt)</p>
     </entry>
     <entry>
         <title type="html"><![CDATA[Etcd watch源码阅读]]></title>
-        <id>lwhile.github.io/post/etcd-watch-source-code</id>
-        <link href="lwhile.github.io/post/etcd-watch-source-code">
+        <id>http://localhost:4000/post/etcd-watch-source-code</id>
+        <link href="http://localhost:4000/post/etcd-watch-source-code">
         </link>
         <updated>2017-11-10T15:57:50.000Z</updated>
         <content type="html"><![CDATA[<p>公司的业务里面使用了Consul做服务发现, 发现其有一个watch机制.这个watch机制引起我的好奇, 因为刚好在看Etcd-raft的代码, Etcd也有类似的watch机制, 所以趁热打铁, 赶紧趁周末研究下etcd watch机制源码的实现.</p>
@@ -478,8 +478,8 @@ func (w *watcher) Watch(ctx context.Context, key string, opts ...OpOption) Watch
     </entry>
     <entry>
         <title type="html"><![CDATA[使用Openresty构建认证网关]]></title>
-        <id>lwhile.github.io/post/hi-openresty</id>
-        <link href="lwhile.github.io/post/hi-openresty">
+        <id>http://localhost:4000/post/hi-openresty</id>
+        <link href="http://localhost:4000/post/hi-openresty">
         </link>
         <updated>2017-11-07T15:51:32.000Z</updated>
         <content type="html"><![CDATA[<p>在单体应用中, 我们可以通过 cookie + session, 或者 JSON web token, 将认证逻辑在单体应用中实现, 简单高效, 还特别省事.</p>
@@ -638,8 +638,8 @@ end
     </entry>
     <entry>
         <title type="html"><![CDATA[日志切分问题有感]]></title>
-        <id>lwhile.github.io/post/ri-zhi-qie-fen-wen-ti-you-gan</id>
-        <link href="lwhile.github.io/post/ri-zhi-qie-fen-wen-ti-you-gan">
+        <id>http://localhost:4000/post/ri-zhi-qie-fen-wen-ti-you-gan</id>
+        <link href="http://localhost:4000/post/ri-zhi-qie-fen-wen-ti-you-gan">
         </link>
         <updated>2017-11-05T15:46:56.000Z</updated>
         <content type="html"><![CDATA[<p>有过服务端开发经验的同学应该对日志这个东西不陌生, 把程序丢到服务器上跑, 日志就是我们了解运行情况,甚至解BUG的唯一入口了.</p>
