@@ -5,7 +5,7 @@
 <meta name="description" content="" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>
-    监控系统 | 神蛋杂谈
+    influxdb | 神蛋杂谈
 </title>
 <link rel="shortcut icon" href="https://lwhile.github.io/favicon.ico?v=1576341726588">
 <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
@@ -98,187 +98,10 @@
                     
     <div class="i-card">
         <b>标签：#
-        监控系统</b>
+        influxdb</b>
     </div>
     
         
-            <article class="post i-card">
-                <h2 class="post-title">
-                    <a href="https://lwhile.github.io/post/how-to-design-monitor-platform">
-                        如何设计监控平台的告警组件
-                    </a>
-                </h2>
-                <div class="post-info">
-                    <time class="post-time">2017-11-20</time>
-                    
-                        <a href="https://lwhile.github.io/tag/jian-kong-xi-tong" class="post-tag i-tag
-                            i-tag-other_3">
-            #监控系统
-        </a>
-                        
-                        <a href="https://lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
-                            i-tag-">
-            #计算机
-        </a>
-                        
-                        <a href="https://lwhile.github.io/tag/5UKnY2CH9d" class="post-tag i-tag
-                            i-tag-error">
-            #Go
-        </a>
-                        
-                </div>
-                <div class="post-article">
-                    
-                            <div class="post-content">
-                                
-                                        <div class="post-content-content">
-                                            当业务发展到一定程度的时候，开发人员会开始考虑在系统中引入监控系统来对系统/业务进行监控。绝大多数监控系统都有两大核心功能，一个是工程师通过这个监控系统，能够对整个系统的运行情况一目了然，另外一个，就是当发生意外情况的时候，监控系统能将事件通知到人手上，毕竟人不可能24小时都在工作。这篇文章将要介绍的，就是第二个核心功能的承担着，告警组件。
-项目背景
-我们公司目前的监控系统采用的是TICK架构中的TI,即用Telegraf采集数据，Influxdb做存储。C我们用了更加流行的Grafana做了替换。至于我们为什么选择了Influxdb，可以参考这篇文章：InfluxDB与Prometheus用于监控系统上的对比
-剩下K，即Kapacitor,我们最后抛弃了它，主要还是因为Kapacitor的太过于臃肿，上手和维护成本太高，很多功能我们都用不上，还不如自己开发一个。而Grafana的报警功能其实还可以，但是对于我们来说有个不大不小的缺陷，这里就不提了。于是自己心里先把实现思路过了一遍，觉得能Hold得住，就向领导请示想自己开发，接下来轮子就造起来了。
-需求与设计原则
-作为一个核心组件，我给自己先定了一个最基本的目标：稳定。功能多不多、炫不炫要让位给稳定性。
-接下来开始思考告警组件的两个基本需求：通知，和异常事件的发现。
-通知方面，邮件的方式是必不可少的。另外因为我们公司有自己的IM产品线，所以支持Webhook也是要留在考虑项里面。至于短信这些和客户的需求耦合度比较高，所以暂不考虑。
-而异常事件的发现，我选择参考Kapacitor的方式，主动去DB做查询，拿到数据再做触发的判断。这种方式有个缺点，如果数据库挂了，那么数据的流入端就断了，这为系统的可用性增加了一个不确定性因素。但我们在Influxdb前面使用relay做了高可用网关，而在我们集群中relay也是高可用的，这可以抵消掉一些上面的不确定性因素。
-但是反过来，如果参考Prometheus或者Open-Falcon的方式，在数据送入数据库之前，先经过告警组做判断，我们目前的监控系统就需要增加一个网关，或者将告警功能嵌入relay里面，这样一来相当于监控的数据流在进入DB前会经过两扇门，每一扇都会降低整个系统一定的吞吐量。还有一个点不得不考虑，对配置的每一次修改都需要重启程序，这势必会造成数据的丢失。为了解决这个问题，Prometheus和Open-Falcon都是将待进入DB的数据复制一份，导到告警组件这里来，而这又需要对采集组件的配合。所以基于上面基点的考虑，我就选择了主动去DB做查询的方式。
-说完上面两个基本需求，还有一个定制化的需求也要考虑，我们希望能在我们的虚拟机管理平台上像主流的公有云厂商一样能够让用户配置告警的策略，所以这引入另外一个需求：对外暴露易操作的API，让前端妹子调用。
-内部设计
-明确了基本需求后，接下来开始内部的设计。为了理清思路，我写下了一份我（从使用者的角度）想要的配置文件（yaml格式）,来帮助我对事物进行抽象：
-alert:
-- name: 宿主机监控
-type: influxdb
-url: http://120.25.127.4:8086
-db: telegraf
-interval: 2s
-query:
-- name: cpu空闲值
-sql: SELECT usage_idle FROM cpu WHERE time &amp;gt; now() - 1m
-threshold: 100
-op: &amp;quot;&amp;lt;=&amp;quot;
-- name: 内存使用率
-sql: SELECT used_percent FROM mem WHERE time &amp;gt; now() - 1m
-op: &amp;quot;&amp;gt;=&amp;quot;
-threshold: 50
-
-notifier:
-- name: 测试组
-enable: true
-type: mail 
-host: smtp.163.com
-port: 25
-username: qq912293672@163.com
-password: xxxxxx
-from: qq912293672@163.com
-to: [912293672@qq.com]
-
-从配置文件上可以看到，我对告警组件抽象出了两个大的划分，一个是alert,抽象了数据的获取。一个是notifier,抽象了事件的通知。
-在alert里面，我赋予了alert几个属性，其中type用来标识数据库的类型，因为我希望这个告警组件能支持多个存储后端。接下来是query，sql属性让用户自定义数据的查询方式，并且用threshold和op表示触发的阀值以及如何触发。总的来说，我采用了将多个查询实体组合成一个告警单位。这是经过思考的结果，目的是为了避免通知风暴：即很多机器很不幸都出异常的时，多个事件将聚合成一个告警，而不是发出多个邮件，而每个邮件的内容却很少。
-而notifier的配置，我特意添加了type,也是为了支持多种通知方式，以及一个开关enable。
-将notifier与alert分开，以及alert中包含query的设计，其实也是从Grafana和prometheus中学到的思路。在此感谢下今天的开源文化，让我等普通人有机会学到别人优秀的设计理念。
-抽象得差不多后，可以考试编码了，按照分类，将代码主要分为3个模块，notify，alert,service。其中service对应我们上面的第三个需求，对外暴露API。
-接口设计
-开发语言上我使用的是Go，我们将会有多个query在执行，这刚好对上的Go的强项，并发。下面看下几个主要的接口：
-// Executor :type Executor interface {
-    Execute() ([]Result, error)
-    Interval() time.Duration
-    Config() Config
-    Close() error
-}
-
-因为alert其实可以当做一个获取数据的执行单位，所以我在这里又抽象出了一个执行器Executor,接下来我们只需要让我们Alert实现该接口，就能被调用执行。
-type Analyzer interface {
-    Analyze(string, interface{}, QueryConfig) (Result, bool)
-}
-
-Analyzer接口实现对各个监控系统数据处理。
-type Result interface {
-    String() string
-    QueryName() string}
-
-Result接口抽象了监控系统的返回数据，屏蔽掉各个监控系统之间的数据差异。
-type Notifier interface {
-    Send(content string) error
-    Name() string
-    Type() string
-    To() []string
-    Enable() bool
-    Config() *Config
-}
-
-通知接口
-接下来我们需要实现一个调度器，实现了对上面Executor的调度和控制：
-type Scheduler interface {
-    Run()
-    AddExecutor(executor.Executor)
-    RemoveExecutor(name string)
-    ExecutorExist(name string) bool
-    Stop()
-}
-
-核心调度逻辑：
-runFn := func(schItem *scheduleItem) {
-        bf := bytes.NewBufferString(&amp;quot;&amp;quot;)
-        ticker := time.NewTicker(schItem.executor.Interval())
-        notiMap := make(map[string]int)
-        mutex := &amp;amp;sync.RWMutex{}        for {            select {            // 定时器到期
-            case &amp;lt;-ticker.C:
-                results, err := schItem.executor.Execute()                if err != nil {
-                    log.Error(err)                    continue
-                }
-                notifiers, err := adaper.ReadAllNotifier()                if err != nil {
-                    log.Error(err)                    continue
-                }                for _, result := range results {                    // 对通知数进行累加
-                    mutex.Lock()
-                    notiMap[result.QueryName()]++
-                    mutex.Unlock()                    // 通知数已经超过了限制
-                    log.Debugf(&amp;quot;notiMap:%+v&amp;quot;, notiMap)
-                    result := result                    if notiMap[result.QueryName()] &amp;gt; notiSeqCount {                        if notiMap[result.QueryName()] == notiSeqCount+1 {                            go func(name string) {
-                                time.Sleep(notiSleepDuration)
-                                mutex.Lock()
-                                notiMap[name] = 0
-                                mutex.Unlock()
-                            }(result.QueryName())
-                        }                        continue
-                    }                    if _, err := bf.WriteString(result.String()); err != nil {
-                        log.Error(err)
-                    }
-                    bf.WriteString(&amp;quot;&amp;lt;br&amp;gt;&amp;quot;)
-                }
-                msgBody := bf.String()
-                bf.Reset()                // 内容为空则跳过通知
-                if msgBody == &amp;quot;&amp;quot; {                    continue
-                }                // 遍历通知器将报警发送出去
-                for _, notifier := range notifiers {
-                    log.Debugf(&amp;quot;bool:%v&amp;quot;, notifier.Enable())                    if !notifier.Enable() {                        continue
-                    }
-                    notifier := notifier                    go func() {
-                        err := notifier.Send(msgBody)                        if err != nil {
-                            log.Errorf(&amp;quot;Send %s notify to %s fail:%s&amp;quot;, notifier.Type(), notifier.To(), err.Error())                            return
-                        }
-                        log.Infof(&amp;quot;Send %s notify to %s success&amp;quot;, notifier.Type(), notifier.To())
-                    }()
-                }            // 收到退出信号
-            case &amp;lt;-schItem.closeCh:
-                ticker.Stop()
-                log.Infof(&amp;quot;Executor %s exit&amp;quot;, schItem.executor.Config().Name)                return
-            }
-        }
-    }
-
-上面的调度控制中，为了避免某个异常事件在短时间没有解决时，我实现了自己的一个控制逻辑：当同一个query的通知已经连续超过3次时，我会让它定制通知半小时。若半小时异常还继续，则再发三次通知给接受者，如此循环下去。
-最后还有HTTP API的实现以及对数据的存储。这属于常规的开发逻辑，和我们这个告警组件的关系不是很大，就不一一介绍了。
-总结
-写这篇文章主要是总结下设计的思路，尤其是在几个核心问题上。在设计之初，除了告诉自己要保持住稳定性之外，还特别注意了如何对代码做到恰到好处的抽象，这也是最近半年看了那么多优秀开源项目的代码后的想法。老实说我这一次又对自己做得不满意，有机会我重构下整个组件。另外其实还有一个比较棘手的问题，就是如何让告警组件做到高可用（这无法通过简单部署多个服务就能实现，这样会导致通知事件的重复发送），这个问题最近正在解决，可以期待下一篇文章。
-https://mp.weixin.qq.com/s/qr8WyroAWqx4D85J89RbvQ
-
-                                        </div>
-                                        
-                                            <a class="btn btn-text" href="https://lwhile.github.io/post/how-to-design-monitor-platform">Read More ~</a>
-                            </div>
-                </div>
-            </article>
-            
             <article class="post i-card">
                 <h2 class="post-title">
                     <a href="https://lwhile.github.io/post/influxdb-vs-prometheus">
@@ -289,22 +112,22 @@ https://mp.weixin.qq.com/s/qr8WyroAWqx4D85J89RbvQ
                     <time class="post-time">2017-07-20</time>
                     
                         <a href="https://lwhile.github.io/tag/influxdb" class="post-tag i-tag
-                            i-tag-info">
+                            i-tag-">
             #influxdb
         </a>
                         
                         <a href="https://lwhile.github.io/tag/prometheus" class="post-tag i-tag
-                            i-tag-other_2">
+                            i-tag-other_4">
             #prometheus
         </a>
                         
                         <a href="https://lwhile.github.io/tag/jian-kong-xi-tong" class="post-tag i-tag
-                            i-tag-other_3">
+                            i-tag-warning">
             #监控系统
         </a>
                         
                         <a href="https://lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
-                            i-tag-other_2">
+                            i-tag-other_3">
             #计算机
         </a>
                         
@@ -375,12 +198,12 @@ InfluxDB 官方出了一个叫做 Kapacitor 的软件, 官方说可以用它实�
                     <time class="post-time">2017-07-17</time>
                     
                         <a href="https://lwhile.github.io/tag/influxdb" class="post-tag i-tag
-                            i-tag-warning">
+                            i-tag-other_3">
             #influxdb
         </a>
                         
                         <a href="https://lwhile.github.io/tag/jian-kong-xi-tong" class="post-tag i-tag
-                            i-tag-primary">
+                            i-tag-banana">
             #监控系统
         </a>
                         
