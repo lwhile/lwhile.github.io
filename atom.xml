@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>lwhile.github.io</id>
     <title>神蛋杂谈</title>
-    <updated>2019-12-14T15:50:59.286Z</updated>
+    <updated>2019-12-14T15:52:27.293Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="lwhile.github.io"/>
     <link rel="self" href="lwhile.github.io/atom.xml"/>
@@ -158,6 +158,166 @@ sleep = min(cap, base * 2 ** attempt)</p>
 <p>对于一些服务比如涉及到事务的数据库操作，如果有多个 client 同时使用上面这条公式的话，会出现请求挤压的情况导致系统的整体吞吐量下降，这时候我们可以引入一个随机因子避免该问题，经过修改的公式如下：</p>
 <p>sleep = random_between(0, min(cap, base * 2 ** attempt))</p>
 <p>如果你使用的是Go，推荐下这个库：https://github.com/cenkalti/backoff</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[使用Openresty构建认证网关]]></title>
+        <id>lwhile.github.io/post/hi-openresty</id>
+        <link href="lwhile.github.io/post/hi-openresty">
+        </link>
+        <updated>2017-11-07T15:51:32.000Z</updated>
+        <content type="html"><![CDATA[<p>在单体应用中, 我们可以通过 cookie + session, 或者 JSON web token, 将认证逻辑在单体应用中实现, 简单高效, 还特别省事.</p>
+<p>然而这几年随着服务化潮流越来越火(我觉得这是必然趋势, 想想我们人类社会是如何运作的), 很多以前单体应用不存在的问题, 现在已成为对单体应用拆分过程中的第一个障碍, 比如系统的认证体系.</p>
+<p>如果每个拆出来的服务都要做一次认证(就是程序员多写几份认证的代码啦), 对于有理想有追求的灵魂の码农来说, 是绝对无法接受的.你说认证代码copy就好了, 不用重新写.no no no, 这样搞出来的架构不仅看着别扭, 代码闻着就觉得臭, 而且迟早有一天会出问题.</p>
+<p>解决单体应用拆分服务后的认证问题其实很常规, 回想下祖师爷们帮我们总结的一句话: &quot;Any problem in computer science can be solved by another layer of indirection.&quot; 我们可以在所有服务前面增加一层认证服务.</p>
+<figure data-type="image" tabindex="1"><img src="http://upload-images.jianshu.io/upload_images/1244770-7c58571258714b45.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Paste_Image.png"></figure>
+<p>看到认证服务这一层用来作为用户请求的总入口, 有Nginx或者Apache使用经验的同学自然而然就想到它们. 如果能把认证模块的功能整合进Nginx或者Apache这些Web服务器, 那岂不是更完美 ?</p>
+<p>而这篇文章的主角: Openresty,就可以帮助我们简单快速得完成这个想法.这是一个由<a href="https://github.com/agentzh">春哥(Github)</a>发起的项目.你可以将Openresty看做Nginx + 常用模块构成的软件包, 但是最重要的功能是我们可以使用Lua在Nginx实现Web框架才能实现的逻辑, 接下来文章将会开始介绍如何使用Openresty, 将上面提到的认证服务整合进Nginx里.</p>
+<h2 id="安装">安装</h2>
+<p>Openresty有两种安装方式, 一种是使用源码编译安装.一种使用官方提供的预编译包:<br>
+具体可参考官网的<a href="https://openresty.org/cn/linux-packages.html">安装文档</a></p>
+<h2 id="hello-world">Hello world</h2>
+<p>如果你没修改过Openresty的安装位置, 默认会被安装在/use/local/openresty目录下.我们现在可以尝试写一个Hello world级别的demo.</p>
+<p>为Openresty创建工作目录并创建配置文件:</p>
+<blockquote>
+<p>mkdir ~/openresty_work<br>
+cd ~/openresty_work<br>
+touch nginx.conf</p>
+</blockquote>
+<p>接下来在nginx.conf里面配置一个路由规则</p>
+<pre><code>worker_processes 1;
+error_log logs/error.log;
+
+events {
+	worker_connections 1024;
+}
+
+http {
+	server {
+		listen 8080;
+		location /hello {
+			default_type text/html;
+			content_by_lua_block {
+				ngx.say(&quot;Hello Openresty.&quot;)
+			}			
+		}
+	}
+}
+
+</code></pre>
+<p>跟普通的Nginx配置文件比起来, 上面的配置多了一个content_by_lua_block指令, 正是通过调用该指令, 访问该路由的时候,才会输出相应的内容.这个指令是由Openresty中的<a href="http://openresty.org/cn/lua-nginx-module.html">LuaNginxModule</a>模块提供的功能, 请求进来的时候, Nginx会启动lua的虚拟机, 输出的内容则由lua提供.</p>
+<p>我们可以使用<code>content_by_lua_file</code>指令替代<code>content_by_lua_block</code>, 将相关的lua代码写进文件里.</p>
+<pre><code>location /hello {
+			content_by_lua_file lua/hello.lua;
+		}
+
+</code></pre>
+<pre><code class="language-lua">--- hello.lua
+ngx.say(&quot;Hello Openresty.&quot;)
+</code></pre>
+<p>有了上面的铺垫,接下来可以开始构建我们的认证服务,认证的方式使用<a href="https://jwt.io/">JWT</a></p>
+<p>Openresty将一个请求的生命周期划分为4个阶段:</p>
+<figure data-type="image" tabindex="2"><img src="http://upload-images.jianshu.io/upload_images/1244770-7854b722bc3cf62c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Paste_Image.png"></figure>
+<p>我们的认证服务将会挂载在第二阶段, 即 Rewrite/Access Phase 上.</p>
+<p>接下来准备一个需要用到的库:<br>
+<a href="https://github.com/SkyLothar/lua-resty-jwt">lua-resty-jwt</a><br>
+clone下来后放到hello.lua文件所在的文件夹,并将lua_package_path配置为:</p>
+<pre><code>lua_package_path &quot;/root/openresty_work/lua/?.lua;/root/openresty_work/lua/lua-resty-jwt/lib/?.lua;;&quot;;
+</code></pre>
+<p>构建的思路也很简单, 对用户提供一个登录请求, 验证身份后将jwt token分发给用户.用户接下来访问需要认证的接口, 则在header里面加入该token, 请求进入Openresty后由lua提取出token进行认证.</p>
+<p>Nginx配置文件</p>
+<pre><code>server {
+                listen 8080;
+                location /hello {
+                        content_by_lua_file lua/hello.lua;
+                }
+                location /login {
+                        content_by_lua_file lua/sign.lua;
+                }
+                location /service1 {
+                        access_by_lua_file lua/verify.lua;
+                        # 需要反向代理在这配置
+                }
+                location /service {
+                        access_by_lua_file lua/verify.lua;
+                        # ...
+                }
+        }
+
+</code></pre>
+<p>下面是配置中相关的lua文件<br>
+sign.lua ↓:</p>
+<pre><code class="language-lua">local jwt = require 'resty.jwt'
+
+-- 只允许POST请求
+if ngx.req.get_method() ~= 'POST' then
+    ngx.status = 405
+    ngx.say(&quot;Mehtod Not Allow&quot;)
+    return
+end
+
+-- 获取请求body
+ngx.req.read_body()
+local body_raw = ngx.req.get_body_data()
+local body_json = cjson.decode(body_raw)
+local username = body_json['username']
+local password = body_json['password']
+
+if not username or not password then
+    ngx.log(ngx.ERR, username, password)
+    ngx.status = 400
+    ngx.say('无法获取账号或者密码')
+    return
+end
+
+-- 验证账号和密码是否正确,如果验证失败则做如下处理
+if not this_is_a_auth_method(username, password) then
+    ngx.status = 401
+    ngx.say('认证失败')
+    return
+end
+</code></pre>
+<p>verify.lua ↓:</p>
+<pre><code>local jwt = require 'resty.jwt'
+
+-- 从请求中提取header并从header从获取token字段
+local headers = ngx.req.get_headers()
+local token = headers['token']
+
+-- 检查token是否存在
+if not token then 
+    ngx.status = 400
+    ngx.say('无法获取token')
+    return 
+end 
+
+-- 验证token
+local jwt_obj = jwt:verify(vars.jwt_salt(), token)
+if not jwt_obj['verified'] then 
+    ngx.status = 401
+    ngx.say('无效的token')
+    return 
+end 
+</code></pre>
+<p>至此一个使用Openresty构建的认证网关的雏形已经出来了.需要说明的一句是, 上面的代码由于没有公司相关的运行环境,笔者没有经过测试和验证.所以只可阅读,不可复制后直接运行 😃</p>
+<p>如果想把这套认证网关用在生产环境上, 还有很多东西需要考虑.比如跨域问题, 静态文件的代理问题等等.</p>
+<p>个人接触Openresty的时间也不长, 文中难免会有地方写错了或者表达得很差, 欢迎发评论或者发邮件给我指正: lwhile521@gmail.com ,感谢.</p>
+<p>对于Openresty, 个人认为要对它产生兴趣,关键在于认不认可让Nginx承担除了Web服务器之外更多的业务, 对于Openresty, 它能带来的好处有:</p>
+<ol>
+<li>
+<p>极致的性能.上文没有提到Openresty的性能, 其实Openresty的编程模型和NodeJS很像, 在Openresty的世界里面,所有东西都是非阻塞的,更难得可贵的是, 它不需要使用NodeJS中的回调函数, 代码写起来其实还是同步模型, 配合C语言编写的Nginx, 最快的脚本语言lua+luajit解释器,这套方案的性能无可挑剔了.</p>
+</li>
+<li>
+<p>降低了Nginx模块的开发难度. Nginx + C/C++能做的, Openresty用lua都能做.开发效率高了, 性能还不怎么降, 何乐而不为呢?</p>
+</li>
+</ol>
+<h3 id="参考资料">参考资料</h3>
+<blockquote>
+<ol>
+<li><a href="https://www.gitbook.com/book/moonbingbing/openresty-best-practices">Openresty最佳实践</a></li>
+<li><a href="https://github.com/SkyLothar/lua-resty-jwt">lua-resty-jwt</a></li>
+</ol>
+</blockquote>
 ]]></content>
     </entry>
     <entry>
