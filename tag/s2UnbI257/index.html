@@ -1,0 +1,355 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>
+    openresty | 神蛋杂谈
+</title>
+<link rel="shortcut icon" href="lwhile.github.io/favicon.ico?v=1576339022595">
+<!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
+<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="lwhile.github.io/styles/main.css">
+<!-- js -->
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+<script src="lwhile.github.io/media/js/jquery.sticky-sidebar.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+
+</head>
+
+<body>
+    <div class="main">
+        <div class="header">
+    <div class="nav">
+        <div class="logo">
+            <a href="lwhile.github.io">
+                <img class="avatar" src="lwhile.github.io/images/avatar.png?v=1576339022595" alt="">
+            </a>
+            <div class="site-title">
+                <h1>
+                    神蛋杂谈
+                </h1>
+            </div>
+        </div>
+        <span class="menu-btn fa fa-align-justify"></span>
+        <div class="menu-container">
+            <ul>
+                
+                    
+                            <li>
+                                <a href="/" class="menu">
+                                    首页
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/archives" class="menu">
+                                    归档
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/tags" class="menu">
+                                    标签
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/post/about" class="menu">
+                                    关于
+                                </a>
+                            </li>
+                            
+                                
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $(".menu-btn").click(function() {
+            $(".menu-container").slideToggle();
+        });
+        $(window).resize(function() {
+
+            if (window.matchMedia('(min-width: 960px)').matches) {
+                $(".menu-container").css('display', 'block')
+            } else {
+                $(".menu-container").css('display', 'none')
+            }
+
+        });
+    });
+</script>
+
+            <div id="main-content" class="post-container main-container">
+                <div id="content" class="main-container-left">
+                    
+    <div class="i-card">
+        <b>标签：#
+        openresty</b>
+    </div>
+    
+        
+            <article class="post i-card">
+                <h2 class="post-title">
+                    <a href="lwhile.github.io/post/hi-openresty">
+                        使用Openresty构建认证网关
+                    </a>
+                </h2>
+                <div class="post-info">
+                    <time class="post-time">2017-11-07</time>
+                    
+                        <a href="lwhile.github.io/tag/s2UnbI257" class="post-tag i-tag
+                            i-tag-other_4">
+            #openresty
+        </a>
+                        
+                        <a href="lwhile.github.io/tag/94Hr92W69j" class="post-tag i-tag
+                            i-tag-">
+            #网络
+        </a>
+                        
+                        <a href="lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
+                            i-tag-other_1">
+            #计算机
+        </a>
+                        
+                </div>
+                <div class="post-article">
+                    
+                            <div class="post-content">
+                                
+                                        <div class="post-content-content">
+                                            在单体应用中, 我们可以通过 cookie + session, 或者 JSON web token, 将认证逻辑在单体应用中实现, 简单高效, 还特别省事.
+然而这几年随着服务化潮流越来越火(我觉得这是必然趋势, 想想我们人类社会是如何运作的), 很多以前单体应用不存在的问题, 现在已成为对单体应用拆分过程中的第一个障碍, 比如系统的认证体系.
+如果每个拆出来的服务都要做一次认证(就是程序员多写几份认证的代码啦), 对于有理想有追求的灵魂の码农来说, 是绝对无法接受的.你说认证代码copy就好了, 不用重新写.no no no, 这样搞出来的架构不仅看着别扭, 代码闻着就觉得臭, 而且迟早有一天会出问题.
+解决单体应用拆分服务后的认证问题其实很常规, 回想下祖师爷们帮我们总结的一句话: &amp;quot;Any problem in computer science can be solved by another layer of indirection.&amp;quot; 我们可以在所有服务前面增加一层认证服务.
+
+看到认证服务这一层用来作为用户请求的总入口, 有Nginx或者Apache使用经验的同学自然而然就想到它们. 如果能把认证模块的功能整合进Nginx或者Apache这些Web服务器, 那岂不是更完美 ?
+而这篇文章的主角: Openresty,就可以帮助我们简单快速得完成这个想法.这是一个由春哥(Github)发起的项目.你可以将Openresty看做Nginx + 常用模块构成的软件包, 但是最重要的功能是我们可以使用Lua在Nginx实现Web框架才能实现的逻辑, 接下来文章将会开始介绍如何使用Openresty, 将上面提到的认证服务整合进Nginx里.
+安装
+Openresty有两种安装方式, 一种是使用源码编译安装.一种使用官方提供的预编译包:
+具体可参考官网的安装文档
+Hello world
+如果你没修改过Openresty的安装位置, 默认会被安装在/use/local/openresty目录下.我们现在可以尝试写一个Hello world级别的demo.
+为Openresty创建工作目录并创建配置文件:
+
+mkdir ~/openresty_work
+cd ~/openresty_work
+touch nginx.conf
+
+接下来在nginx.conf里面配置一个路由规则
+worker_processes 1;
+error_log logs/error.log;
+
+events {
+	worker_connections 1024;
+}
+
+http {
+	server {
+		listen 8080;
+		location /hello {
+			default_type text/html;
+			content_by_lua_block {
+				ngx.say(&amp;quot;Hello Openresty.&amp;quot;)
+			}			
+		}
+	}
+}
+
+
+跟普通的Nginx配置文件比起来, 上面的配置多了一个content_by_lua_block指令, 正是通过调用该指令, 访问该路由的时候,才会输出相应的内容.这个指令是由Openresty中的LuaNginxModule模块提供的功能, 请求进来的时候, Nginx会启动lua的虚拟机, 输出的内容则由lua提供.
+我们可以使用content_by_lua_file指令替代content_by_lua_block, 将相关的lua代码写进文件里.
+location /hello {
+			content_by_lua_file lua/hello.lua;
+		}
+
+
+--- hello.lua
+ngx.say(&amp;quot;Hello Openresty.&amp;quot;)
+
+有了上面的铺垫,接下来可以开始构建我们的认证服务,认证的方式使用JWT
+Openresty将一个请求的生命周期划分为4个阶段:
+
+我们的认证服务将会挂载在第二阶段, 即 Rewrite/Access Phase 上.
+接下来准备一个需要用到的库:
+lua-resty-jwt
+clone下来后放到hello.lua文件所在的文件夹,并将lua_package_path配置为:
+lua_package_path &amp;quot;/root/openresty_work/lua/?.lua;/root/openresty_work/lua/lua-resty-jwt/lib/?.lua;;&amp;quot;;
+
+构建的思路也很简单, 对用户提供一个登录请求, 验证身份后将jwt token分发给用户.用户接下来访问需要认证的接口, 则在header里面加入该token, 请求进入Openresty后由lua提取出token进行认证.
+Nginx配置文件
+server {
+                listen 8080;
+                location /hello {
+                        content_by_lua_file lua/hello.lua;
+                }
+                location /login {
+                        content_by_lua_file lua/sign.lua;
+                }
+                location /service1 {
+                        access_by_lua_file lua/verify.lua;
+                        # 需要反向代理在这配置
+                }
+                location /service {
+                        access_by_lua_file lua/verify.lua;
+                        # ...
+                }
+        }
+
+
+下面是配置中相关的lua文件
+sign.lua ↓:
+local jwt = require &#39;resty.jwt&#39;
+
+-- 只允许POST请求
+if ngx.req.get_method() ~= &#39;POST&#39; then
+    ngx.status = 405
+    ngx.say(&amp;quot;Mehtod Not Allow&amp;quot;)
+    return
+end
+
+-- 获取请求body
+ngx.req.read_body()
+local body_raw = ngx.req.get_body_data()
+local body_json = cjson.decode(body_raw)
+local username = body_json[&#39;username&#39;]
+local password = body_json[&#39;password&#39;]
+
+if not username or not password then
+    ngx.log(ngx.ERR, username, password)
+    ngx.status = 400
+    ngx.say(&#39;无法获取账号或者密码&#39;)
+    return
+end
+
+-- 验证账号和密码是否正确,如果验证失败则做如下处理
+if not this_is_a_auth_method(username, password) then
+    ngx.status = 401
+    ngx.say(&#39;认证失败&#39;)
+    return
+end
+
+verify.lua ↓:
+local jwt = require &#39;resty.jwt&#39;
+
+-- 从请求中提取header并从header从获取token字段
+local headers = ngx.req.get_headers()
+local token = headers[&#39;token&#39;]
+
+-- 检查token是否存在
+if not token then 
+    ngx.status = 400
+    ngx.say(&#39;无法获取token&#39;)
+    return 
+end 
+
+-- 验证token
+local jwt_obj = jwt:verify(vars.jwt_salt(), token)
+if not jwt_obj[&#39;verified&#39;] then 
+    ngx.status = 401
+    ngx.say(&#39;无效的token&#39;)
+    return 
+end 
+
+至此一个使用Openresty构建的认证网关的雏形已经出来了.需要说明的一句是, 上面的代码由于没有公司相关的运行环境,笔者没有经过测试和验证.所以只可阅读,不可复制后直接运行 😃
+如果想把这套认证网关用在生产环境上, 还有很多东西需要考虑.比如跨域问题, 静态文件的代理问题等等.
+个人接触Openresty的时间也不长, 文中难免会有地方写错了或者表达得很差, 欢迎发评论或者发邮件给我指正: lwhile521@gmail.com ,感谢.
+对于Openresty, 个人认为要对它产生兴趣,关键在于认不认可让Nginx承担除了Web服务器之外更多的业务, 对于Openresty, 它能带来的好处有:
+
+
+极致的性能.上文没有提到Openresty的性能, 其实Openresty的编程模型和NodeJS很像, 在Openresty的世界里面,所有东西都是非阻塞的,更难得可贵的是, 它不需要使用NodeJS中的回调函数, 代码写起来其实还是同步模型, 配合C语言编写的Nginx, 最快的脚本语言lua+luajit解释器,这套方案的性能无可挑剔了.
+
+
+降低了Nginx模块的开发难度. Nginx + C/C++能做的, Openresty用lua都能做.开发效率高了, 性能还不怎么降, 何乐而不为呢?
+
+
+参考资料
+
+
+Openresty最佳实践
+lua-resty-jwt
+
+
+
+                                        </div>
+                                        
+                                            <a class="btn btn-text" href="lwhile.github.io/post/hi-openresty">Read More ~</a>
+                            </div>
+                </div>
+            </article>
+            
+                <!-- 翻页 -->
+                
+                </div>
+                <!--  -->
+                <div class="main-container-middle"></div>
+                <!--  -->
+                <div id="sidebar" class="main-container-right">
+
+                    <!-- 个人信息 -->
+                    
+    <div class="id_card i-card">
+        <div class="id_card-avatar" style="background-image: url(lwhile.github.io/images/avatar.png?v=1576339022595)">
+        </div>
+        <h1 class="id_card-title">
+            神蛋杂谈
+        </h1>
+        <h2 class="id_card-description">
+            
+        </h2>
+        <!--  -->
+        <div class="id_card-sns">
+            <!-- github -->
+            
+                    <!-- twitter -->
+                    
+                            <!-- weibo -->
+                            
+                                    <!-- facebook -->
+                                    
+
+        </div>
+    </div>
+    
+
+                        <!-- 公告栏 -->
+                        
+
+                </div>
+            </div>
+
+
+
+            <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="lwhile.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+    <script>
+        $('#sidebar').stickySidebar({
+            topSpacing: 80,
+            // bottomSpacing: 60
+        });
+    </script>
+</body>
+
+</html>

@@ -7,7 +7,7 @@
 <title>
     计算机 | 神蛋杂谈
 </title>
-<link rel="shortcut icon" href="lwhile.github.io/favicon.ico?v=1576338805422">
+<link rel="shortcut icon" href="lwhile.github.io/favicon.ico?v=1576339022595">
 <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
 <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
@@ -27,7 +27,7 @@
     <div class="nav">
         <div class="logo">
             <a href="lwhile.github.io">
-                <img class="avatar" src="lwhile.github.io/images/avatar.png?v=1576338805422" alt="">
+                <img class="avatar" src="lwhile.github.io/images/avatar.png?v=1576339022595" alt="">
             </a>
             <div class="site-title">
                 <h1>
@@ -112,7 +112,7 @@
                     <time class="post-time">2019-11-06</time>
                     
                         <a href="lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
-                            i-tag-info">
+                            i-tag-other_4">
             #计算机
         </a>
                         
@@ -155,12 +155,12 @@
                     <time class="post-time">2019-02-19</time>
                     
                         <a href="lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
-                            i-tag-error">
+                            i-tag-other_1">
             #计算机
         </a>
                         
                         <a href="lwhile.github.io/tag/5UKnY2CH9d" class="post-tag i-tag
-                            i-tag-error">
+                            i-tag-other_2">
             #Go
         </a>
                         
@@ -244,7 +244,6 @@ location, _ := time.LoadLocation(&amp;quot;Asia/Hong_Kong&amp;quot;)
 t := time.Date(1942,10,30,0,0,0,0,location)
 fmt.Println(t) // 1942-10-30 00:00:00 +0900 JST
 用 1942 年 10 月 30 日构建一个香港时间，时区会是（JST）日本标准时间。Why?
-
 原因是这个：
 
 香港日佔時期，又稱為香港日治時期或香港淪陷時期，是指第二次世界大戰時大日本帝國軍事占領香港的時期：由1941年12月25日香港總督楊慕琦投降起，至1945年8月15日日本無條件投降為止；香港人俗稱這段時期為「三年零八個月」。
@@ -268,7 +267,7 @@ fmt.Println(t) // 1942-10-30 00:00:00 +0900 JST
                     <time class="post-time">2018-04-02</time>
                     
                         <a href="lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
-                            i-tag-other_2">
+                            i-tag-error">
             #计算机
         </a>
                         
@@ -321,6 +320,232 @@ sleep = random_between(0, min(cap, base * 2 ** attempt))
                 </div>
             </article>
             
+            <article class="post i-card">
+                <h2 class="post-title">
+                    <a href="lwhile.github.io/post/hi-openresty">
+                        使用Openresty构建认证网关
+                    </a>
+                </h2>
+                <div class="post-info">
+                    <time class="post-time">2017-11-07</time>
+                    
+                        <a href="lwhile.github.io/tag/s2UnbI257" class="post-tag i-tag
+                            i-tag-info">
+            #openresty
+        </a>
+                        
+                        <a href="lwhile.github.io/tag/94Hr92W69j" class="post-tag i-tag
+                            i-tag-banana">
+            #网络
+        </a>
+                        
+                        <a href="lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
+                            i-tag-warning">
+            #计算机
+        </a>
+                        
+                </div>
+                <div class="post-article">
+                    
+                            <div class="post-content">
+                                
+                                        <div class="post-content-content">
+                                            在单体应用中, 我们可以通过 cookie + session, 或者 JSON web token, 将认证逻辑在单体应用中实现, 简单高效, 还特别省事.
+然而这几年随着服务化潮流越来越火(我觉得这是必然趋势, 想想我们人类社会是如何运作的), 很多以前单体应用不存在的问题, 现在已成为对单体应用拆分过程中的第一个障碍, 比如系统的认证体系.
+如果每个拆出来的服务都要做一次认证(就是程序员多写几份认证的代码啦), 对于有理想有追求的灵魂の码农来说, 是绝对无法接受的.你说认证代码copy就好了, 不用重新写.no no no, 这样搞出来的架构不仅看着别扭, 代码闻着就觉得臭, 而且迟早有一天会出问题.
+解决单体应用拆分服务后的认证问题其实很常规, 回想下祖师爷们帮我们总结的一句话: &amp;quot;Any problem in computer science can be solved by another layer of indirection.&amp;quot; 我们可以在所有服务前面增加一层认证服务.
+
+看到认证服务这一层用来作为用户请求的总入口, 有Nginx或者Apache使用经验的同学自然而然就想到它们. 如果能把认证模块的功能整合进Nginx或者Apache这些Web服务器, 那岂不是更完美 ?
+而这篇文章的主角: Openresty,就可以帮助我们简单快速得完成这个想法.这是一个由春哥(Github)发起的项目.你可以将Openresty看做Nginx + 常用模块构成的软件包, 但是最重要的功能是我们可以使用Lua在Nginx实现Web框架才能实现的逻辑, 接下来文章将会开始介绍如何使用Openresty, 将上面提到的认证服务整合进Nginx里.
+安装
+Openresty有两种安装方式, 一种是使用源码编译安装.一种使用官方提供的预编译包:
+具体可参考官网的安装文档
+Hello world
+如果你没修改过Openresty的安装位置, 默认会被安装在/use/local/openresty目录下.我们现在可以尝试写一个Hello world级别的demo.
+为Openresty创建工作目录并创建配置文件:
+
+mkdir ~/openresty_work
+cd ~/openresty_work
+touch nginx.conf
+
+接下来在nginx.conf里面配置一个路由规则
+worker_processes 1;
+error_log logs/error.log;
+
+events {
+	worker_connections 1024;
+}
+
+http {
+	server {
+		listen 8080;
+		location /hello {
+			default_type text/html;
+			content_by_lua_block {
+				ngx.say(&amp;quot;Hello Openresty.&amp;quot;)
+			}			
+		}
+	}
+}
+
+
+跟普通的Nginx配置文件比起来, 上面的配置多了一个content_by_lua_block指令, 正是通过调用该指令, 访问该路由的时候,才会输出相应的内容.这个指令是由Openresty中的LuaNginxModule模块提供的功能, 请求进来的时候, Nginx会启动lua的虚拟机, 输出的内容则由lua提供.
+我们可以使用content_by_lua_file指令替代content_by_lua_block, 将相关的lua代码写进文件里.
+location /hello {
+			content_by_lua_file lua/hello.lua;
+		}
+
+
+--- hello.lua
+ngx.say(&amp;quot;Hello Openresty.&amp;quot;)
+
+有了上面的铺垫,接下来可以开始构建我们的认证服务,认证的方式使用JWT
+Openresty将一个请求的生命周期划分为4个阶段:
+
+我们的认证服务将会挂载在第二阶段, 即 Rewrite/Access Phase 上.
+接下来准备一个需要用到的库:
+lua-resty-jwt
+clone下来后放到hello.lua文件所在的文件夹,并将lua_package_path配置为:
+lua_package_path &amp;quot;/root/openresty_work/lua/?.lua;/root/openresty_work/lua/lua-resty-jwt/lib/?.lua;;&amp;quot;;
+
+构建的思路也很简单, 对用户提供一个登录请求, 验证身份后将jwt token分发给用户.用户接下来访问需要认证的接口, 则在header里面加入该token, 请求进入Openresty后由lua提取出token进行认证.
+Nginx配置文件
+server {
+                listen 8080;
+                location /hello {
+                        content_by_lua_file lua/hello.lua;
+                }
+                location /login {
+                        content_by_lua_file lua/sign.lua;
+                }
+                location /service1 {
+                        access_by_lua_file lua/verify.lua;
+                        # 需要反向代理在这配置
+                }
+                location /service {
+                        access_by_lua_file lua/verify.lua;
+                        # ...
+                }
+        }
+
+
+下面是配置中相关的lua文件
+sign.lua ↓:
+local jwt = require &#39;resty.jwt&#39;
+
+-- 只允许POST请求
+if ngx.req.get_method() ~= &#39;POST&#39; then
+    ngx.status = 405
+    ngx.say(&amp;quot;Mehtod Not Allow&amp;quot;)
+    return
+end
+
+-- 获取请求body
+ngx.req.read_body()
+local body_raw = ngx.req.get_body_data()
+local body_json = cjson.decode(body_raw)
+local username = body_json[&#39;username&#39;]
+local password = body_json[&#39;password&#39;]
+
+if not username or not password then
+    ngx.log(ngx.ERR, username, password)
+    ngx.status = 400
+    ngx.say(&#39;无法获取账号或者密码&#39;)
+    return
+end
+
+-- 验证账号和密码是否正确,如果验证失败则做如下处理
+if not this_is_a_auth_method(username, password) then
+    ngx.status = 401
+    ngx.say(&#39;认证失败&#39;)
+    return
+end
+
+verify.lua ↓:
+local jwt = require &#39;resty.jwt&#39;
+
+-- 从请求中提取header并从header从获取token字段
+local headers = ngx.req.get_headers()
+local token = headers[&#39;token&#39;]
+
+-- 检查token是否存在
+if not token then 
+    ngx.status = 400
+    ngx.say(&#39;无法获取token&#39;)
+    return 
+end 
+
+-- 验证token
+local jwt_obj = jwt:verify(vars.jwt_salt(), token)
+if not jwt_obj[&#39;verified&#39;] then 
+    ngx.status = 401
+    ngx.say(&#39;无效的token&#39;)
+    return 
+end 
+
+至此一个使用Openresty构建的认证网关的雏形已经出来了.需要说明的一句是, 上面的代码由于没有公司相关的运行环境,笔者没有经过测试和验证.所以只可阅读,不可复制后直接运行 😃
+如果想把这套认证网关用在生产环境上, 还有很多东西需要考虑.比如跨域问题, 静态文件的代理问题等等.
+个人接触Openresty的时间也不长, 文中难免会有地方写错了或者表达得很差, 欢迎发评论或者发邮件给我指正: lwhile521@gmail.com ,感谢.
+对于Openresty, 个人认为要对它产生兴趣,关键在于认不认可让Nginx承担除了Web服务器之外更多的业务, 对于Openresty, 它能带来的好处有:
+
+
+极致的性能.上文没有提到Openresty的性能, 其实Openresty的编程模型和NodeJS很像, 在Openresty的世界里面,所有东西都是非阻塞的,更难得可贵的是, 它不需要使用NodeJS中的回调函数, 代码写起来其实还是同步模型, 配合C语言编写的Nginx, 最快的脚本语言lua+luajit解释器,这套方案的性能无可挑剔了.
+
+
+降低了Nginx模块的开发难度. Nginx + C/C++能做的, Openresty用lua都能做.开发效率高了, 性能还不怎么降, 何乐而不为呢?
+
+
+参考资料
+
+
+Openresty最佳实践
+lua-resty-jwt
+
+
+
+                                        </div>
+                                        
+                                            <a class="btn btn-text" href="lwhile.github.io/post/hi-openresty">Read More ~</a>
+                            </div>
+                </div>
+            </article>
+            
+            <article class="post i-card">
+                <h2 class="post-title">
+                    <a href="lwhile.github.io/post/ri-zhi-qie-fen-wen-ti-you-gan">
+                        日志切分问题有感
+                    </a>
+                </h2>
+                <div class="post-info">
+                    <time class="post-time">2017-11-05</time>
+                    
+                        <a href="lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
+                            i-tag-">
+            #计算机
+        </a>
+                        
+                </div>
+                <div class="post-article">
+                    
+                            <div class="post-content">
+                                
+                                        <div class="post-content-content">
+                                            有过服务端开发经验的同学应该对日志这个东西不陌生, 把程序丢到服务器上跑, 日志就是我们了解运行情况,甚至解BUG的唯一入口了.
+有些程序的日志量会增长得非常快, 比如Nginx, 当一个日志文件大到几百MB甚至上GB的时候, 要从这个文件找出我们要的信息就基本等于大海捞针了,所以这时候对日志进行管理就显得格外重要.
+日志量大的平台可以上ELK,利用ES的搜索优势基本不担心日志数据量大的问题.但本文不打算涉及这方面的内容.接下来主要讲讲如何正确得对日志文件做切分.
+Linxu上的日志切分有两种形式, 一种是使用Linux的logrotate工具, 另外一种是使用额外编写的脚本, 这种形式一般是和日志库配合使用.
+因为业务的关系, 我们最开始抛弃了使用logrotate的方案, 因为我们觉得这会给实施人员增加系统的的维护负担(后来发现是我们对logrotate不够了解).于是我们使用第二种方案, 将日志的切分操作在我们的日志库里面实现, 我们封装了logrus和lfshook, 利用logrus的hook机制将切分的逻辑嵌入在日志库里面,代码调用的时候会自动触发切分操作.我们会这样做也是受到beego框架的影响, 它的日志库默认就带了切分功能.
+一切运作得很顺利, 直到我们有一次在使用Openresty的时候, 发现Nginx的日志没有被切分.因为之前使用Nginx的时候,默认安装完毕后日志是会自动以天切分的, 于是我们开始找Nginx的配置项,看看是否漏掉了某些配置.但是不找没关系,了解后才发现Nginx是不提供日志切分功能的.What ? 那之前的切分功能是怎么来的?
+接下来解决问题的过程中发现了在/etc/logrotate.d/下有nginx的配置, 同时还有Mysql和其他基础组件的,这时我们才想到有可能是RPM包(我们的系统是Centos)安装的时候自动生成了一个logrotate的配置文件,后来一查果然是(命令:rpm -qpl xxx.rpm).而我们的Openresty包没有生成这个配置文件,所以导致Nginx的日志文件没有被切分.
+实际上很多软件都只会做日志的记录,不会帮忙做切分,这个确实是合理的.这让我们想起logrus为什么不提供日志切分的功能,而是得由第三方的库去完成.我们将日志切分的逻辑耦合进代码里面,现在回过头来看其实也不是很合理,正确的做法其实还是应该在打RPM包的时候, 生成一个logrotate的配置文件, 这样一来也不会增加实施人员的负担,而且也可以将切分功能统一到一个地方去做.
+
+                                        </div>
+                                        
+                                            <a class="btn btn-text" href="lwhile.github.io/post/ri-zhi-qie-fen-wen-ti-you-gan">Read More ~</a>
+                            </div>
+                </div>
+            </article>
+            
                 <!-- 翻页 -->
                 
                 </div>
@@ -332,7 +557,7 @@ sleep = random_between(0, min(cap, base * 2 ** attempt))
                     <!-- 个人信息 -->
                     
     <div class="id_card i-card">
-        <div class="id_card-avatar" style="background-image: url(lwhile.github.io/images/avatar.png?v=1576338805422)">
+        <div class="id_card-avatar" style="background-image: url(lwhile.github.io/images/avatar.png?v=1576339022595)">
         </div>
         <h1 class="id_card-title">
             神蛋杂谈
