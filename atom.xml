@@ -2,13 +2,43 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://lwhile.github.io</id>
     <title>神蛋杂谈</title>
-    <updated>2019-12-14T16:05:05.595Z</updated>
+    <updated>2019-12-14T16:07:44.078Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://lwhile.github.io"/>
     <link rel="self" href="https://lwhile.github.io/atom.xml"/>
     <logo>https://lwhile.github.io/images/avatar.png</logo>
     <icon>https://lwhile.github.io/favicon.ico</icon>
     <rights>All rights reserved 2019, 神蛋杂谈</rights>
+    <entry>
+        <title type="html"><![CDATA[打个小卡]]></title>
+        <id>https://lwhile.github.io/post/da-ge-xiao-qia</id>
+        <link href="https://lwhile.github.io/post/da-ge-xiao-qia">
+        </link>
+        <updated>2019-12-14T16:06:20.000Z</updated>
+        <content type="html"><![CDATA[<p>今天领到我人生中的第八份工资，解决掉这个月信用卡的账单，第一次有了超过5位数的存款。</p>
+<p>元旦那天，我在奇妙清单里写下了几个目标，其中最重要的一个是能够去陌生城市独立生存下来。三月份的时候，很幸运得到一个实习的机会。如我所愿，真的成了一名程序员。</p>
+<figure data-type="image" tabindex="1"><img src="http://upload-images.jianshu.io/upload_images/1244770-9f92a14aa91c2280.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></figure>
+<p>接下来的那半年，每周要来回一次广州和肇庆，不断得平衡学校与公司之间的关系。入职的第一个星期，领导问我之前坚持过最久的一件事是什么，我说减肥。</p>
+<p>这八个月中间心态确实有崩过，但最终还是坚持了下来，到了现在。</p>
+<p>如果要问最近这一年我得到哪些成长，抛开我专业上的那些东西，我觉得最重要的，是将社会的模样从校园里面的那个轮廓，一天天得将细节渲染出来。见得越多，想要的越多，再看看自己有什么，心里就越来越恐慌，一点都不敢停下自己的脚步。</p>
+<p>这周突然开始更新公众号，看到两年前自己推的那些东西，自己也会笑出来。大学终究还是在离我们远去，想起学校里面的生活，不由觉得大学生活真的是人生中最幸福的时光，怕是以后都不会有了。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[打个小卡]]></title>
+        <id>https://lwhile.github.io/post/litter-memory-2017</id>
+        <link href="https://lwhile.github.io/post/litter-memory-2017">
+        </link>
+        <updated>2019-11-10T16:06:20.000Z</updated>
+        <content type="html"><![CDATA[<p>今天领到我人生中的第八份工资，解决掉这个月信用卡的账单，第一次有了超过5位数的存款。</p>
+<p>元旦那天，我在奇妙清单里写下了几个目标，其中最重要的一个是能够去陌生城市独立生存下来。三月份的时候，很幸运得到一个实习的机会。如我所愿，真的成了一名程序员。</p>
+<figure data-type="image" tabindex="1"><img src="http://upload-images.jianshu.io/upload_images/1244770-9f92a14aa91c2280.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></figure>
+<p>接下来的那半年，每周要来回一次广州和肇庆，不断得平衡学校与公司之间的关系。入职的第一个星期，领导问我之前坚持过最久的一件事是什么，我说减肥。</p>
+<p>这八个月中间心态确实有崩过，但最终还是坚持了下来，到了现在。</p>
+<p>如果要问最近这一年我得到哪些成长，抛开我专业上的那些东西，我觉得最重要的，是将社会的模样从校园里面的那个轮廓，一天天得将细节渲染出来。见得越多，想要的越多，再看看自己有什么，心里就越来越恐慌，一点都不敢停下自己的脚步。</p>
+<p>这周突然开始更新公众号，看到两年前自己推的那些东西，自己也会笑出来。大学终究还是在离我们远去，想起学校里面的生活，不由觉得大学生活真的是人生中最幸福的时光，怕是以后都不会有了。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[致开发人员]]></title>
         <id>https://lwhile.github.io/post/for-developer</id>
