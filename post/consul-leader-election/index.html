@@ -5,7 +5,7 @@
 <meta name="description" content="" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>
-    打个小卡 | 神蛋杂谈
+    使用 Consul 实现分布式环境下的 Leader 选举 | 神蛋杂谈
 </title>
 <link rel="shortcut icon" href="https://lwhile.github.io/favicon.ico?v=1576340775194">
 <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
@@ -99,28 +99,50 @@
                 <div id="content" class="main-container-left">
                     <article class="post i-card">
                         <h2 class="post-title">
-                            打个小卡
+                            使用 Consul 实现分布式环境下的 Leader 选举
                         </h2>
                         <div class="post-info">
-                            <time class="post-time">2017-11-11</time>
+                            <time class="post-time">2017-12-02</time>
                             
-                                <a href="https://lwhile.github.io/tag/sui-sui-nian" class="post-tag i-tag
-                            i-tag-">
-                            #碎碎念
+                                <a href="https://lwhile.github.io/tag/consul" class="post-tag i-tag
+                            i-tag-other_4">
+                            #consul
+                        </a>
+                                
+                                <a href="https://lwhile.github.io/tag/fen-bu-shi-xi-tong" class="post-tag i-tag
+                            i-tag-primary">
+                            #分布式系统
+                        </a>
+                                
+                                <a href="https://lwhile.github.io/tag/5UKnY2CH9d" class="post-tag i-tag
+                            i-tag-error">
+                            #Go
                         </a>
                                 
                         </div>
                         
-                            <div class="post-feature-image" style="background-image: url('https://lwhile.github.io/post-images/litter-memory-2017.jpeg')"></div>
-                            
                                 <div class="post-content">
-                                    <p>今天领到我人生中的第八份工资，解决掉这个月信用卡的账单，第一次有了超过5位数的存款。</p>
-<p>元旦那天，我在奇妙清单里写下了几个目标，其中最重要的一个是能够去陌生城市独立生存下来。三月份的时候，很幸运得到一个实习的机会。如我所愿，真的成了一名程序员。</p>
-<figure data-type="image" tabindex="1"><img src="http://upload-images.jianshu.io/upload_images/1244770-9f92a14aa91c2280.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></figure>
-<p>接下来的那半年，每周要来回一次广州和肇庆，不断得平衡学校与公司之间的关系。入职的第一个星期，领导问我之前坚持过最久的一件事是什么，我说减肥。</p>
-<p>这八个月中间心态确实有崩过，但最终还是坚持了下来，到了现在。</p>
-<p>如果要问最近这一年我得到哪些成长，抛开我专业上的那些东西，我觉得最重要的，是将社会的模样从校园里面的那个轮廓，一天天得将细节渲染出来。见得越多，想要的越多，再看看自己有什么，心里就越来越恐慌，一点都不敢停下自己的脚步。</p>
-<p>这周突然开始更新公众号，看到两年前自己推的那些东西，自己也会笑出来。大学终究还是在离我们远去，想起学校里面的生活，不由觉得大学生活真的是人生中最幸福的时光，怕是以后都不会有了。</p>
+                                    <p>想象这样一种业务场景：你在一个分布式环境中部署了一个任务通知系统，或者一个定时任务系统，为了做高可用，每一个节点你都部署了一整套完整的服务。</p>
+<p>很快你就会发现，用户会收到重复的通知信息，或者相同的任务也会被执行了多遍。显然这是不行的。</p>
+<p>为了让我们的系统能够正常运行，并且又能实现高可用形式的部署，我们需要在这几个节点中选出一个Leader,做为最终执行任务的唯一节点。这篇文章将探讨如何实现这样一种需求，并且介绍如何使用consul来选举出我们的Leader。</p>
+<p>一致性问题<br>
+我们的问题属于分布式一致性问题的范畴，即在分布式环境下，结点/服务之间如何做到类似单机的运行环境。这个问题有多重要呢，基本上只要是一个正常的分布式系统，一致性都会是一个必须要考虑的问题。这有点像你在打LOL或者吃鸡，你和队友们得保持战术的一致才能控制得住局面。从某个程度上讲，你和队友就组成了一个分布式系统。</p>
+<p>解决分布式一致性的算法很多，但在工业界大规模使用的只有两个：Paxos和Raft。Paxos的典型代表有Google的Chubby,还有Apache基金会的Zookeeper，这个Java的同学应该有听说过。Raft的代表有Etcd和TiKV,前者已经成为许多系统不可或缺的一部分，包括Kubernetes,而后者已经在成为NewSQL的代表作上一路狂奔着。不过这里得提一句，不管是Google还是Pingcap（TiKV的开发商）,都对Paxos和Raft应用到工业软件上做了优化。</p>
+<p>要正确得实现了Paxos和Raft算法都不是一件特别容易的事，尤其是Paxos，Raft还好些。但如果想每一个服务都嵌入一个Paxos或者Raft，这对于维护将是一场灾难。Google的做法是使用Chubby作为一致性的基础服务提供者，在这之上提供分布式锁和Leader选举的服务（是不是有点PaaS的味道）。而这篇文章将要使用的，是一个能提供类似服务的开源软件：Consul</p>
+<p>使用Consul<br>
+回到这篇文章的主题，要解决文章最开始提到的那个问题，我们可以在几个服务之间选择一个Leader出来，具体的任务交给Leader，其他结点在Leader出现问题的时候再补上去成为一个新的Leader。我们将Leader的选举交给Consul帮我们解决，Consul只要为我们做一件事就行：给我们一把分布式的锁，哪个服务能拿到这个锁，谁就是Leader。</p>
+<p>Consul在我们公司被用来做域名服务和建康检查，而它刚好提供了一个基于Raft算法的Kv store(Kv store可以作为分布式锁的实现基础)的功能。我们可以在这个kv store里面写入一对kv, key是一个固定的值，而value则是能够唯一代表节点/服务的ID，通过Value我们就可以知道谁是Leader。</p>
+<p>Consul提供了一个Session机制，用它来代表服务与Consul节点之间的会话关系，并且能提供一个代表这个会话的Session ID,这个ID将作为上面提到的Value写入kv中。</p>
+<p>整个流程经过几次调整，最后设计出来是这样的：</p>
+<p>服务启动时，向Consul注册一个Session，得到一个Session ID。</p>
+<p>将Session ID作为Value，字符串leader(自由定义)作为key，写入到KV中。</p>
+<p>若写入成功，则当选为Leader.若写入失败，则表示竞选失败。</p>
+<p>每个Session都会有一个TTL（我们公司定的是Consul的最小值10s），当选为Leader的服务需要定时延长改TTL。比如每隔5s延长一次。</p>
+<p>竞选失败的节点，则在后台轮询，不断尝试成为Leader。</p>
+<p>业务活动发起时，先检查当前所在节点是否是Leader,如果是才能真正发起业务，如果不是，则丢弃。</p>
+<p>这样我们就可以解决文章开始时提到的那个问题了。</p>
+<p>感觉文章写飘了，说到的东西有点多，Consul的这个点反而没有什么好讲的。其实重点是一致性算法和分布式锁的实现，有兴趣的同学可以看下相关的论文，Google搜一下就有了。笔者最近也在阅读和翻译谷歌实现Chubby的那篇论文，翻译的内容挂在Github上，不过还没有翻译完成，有兴趣的同学欢迎一起翻译，在Github搜”Chubby中文”就能找到项目了，或者点击原文链接也行。</p>
+<p>https://mp.weixin.qq.com/s/gkA1qDx8e3XrNXXnxLyHfQ</p>
 
                                 </div>
                     </article>
@@ -128,9 +150,9 @@
                     
                         <div class="next-post">
                             <div class="next">下一篇</div>
-                            <a href="https://lwhile.github.io/post/etcd-watch-source-code">
+                            <a href="https://lwhile.github.io/post/how-to-design-monitor-platform">
                                 <h3 class="post-title">
-                                    Etcd watch源码阅读
+                                    如何设计监控平台的告警组件
                                 </h3>
                             </a>
                         </div>

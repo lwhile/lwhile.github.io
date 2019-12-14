@@ -1,0 +1,241 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>
+    raft | 神蛋杂谈
+</title>
+<link rel="shortcut icon" href="https://lwhile.github.io/favicon.ico?v=1576340775194">
+<!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
+<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://lwhile.github.io/styles/main.css">
+<!-- js -->
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://lwhile.github.io/media/js/jquery.sticky-sidebar.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+
+</head>
+
+<body>
+    <div class="main">
+        <div class="header">
+    <div class="nav">
+        <div class="logo">
+            <a href="https://lwhile.github.io">
+                <img class="avatar" src="https://lwhile.github.io/images/avatar.png?v=1576340775194" alt="">
+            </a>
+            <div class="site-title">
+                <h1>
+                    神蛋杂谈
+                </h1>
+            </div>
+        </div>
+        <span class="menu-btn fa fa-align-justify"></span>
+        <div class="menu-container">
+            <ul>
+                
+                    
+                            <li>
+                                <a href="/" class="menu">
+                                    首页
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/archives" class="menu">
+                                    归档
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/tags" class="menu">
+                                    标签
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/post/about" class="menu">
+                                    关于
+                                </a>
+                            </li>
+                            
+                                
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $(".menu-btn").click(function() {
+            $(".menu-container").slideToggle();
+        });
+        $(window).resize(function() {
+
+            if (window.matchMedia('(min-width: 960px)').matches) {
+                $(".menu-container").css('display', 'block')
+            } else {
+                $(".menu-container").css('display', 'none')
+            }
+
+        });
+    });
+</script>
+
+            <div id="main-content" class="post-container main-container">
+                <div id="content" class="main-container-left">
+                    
+    <div class="i-card">
+        <b>标签：#
+        raft</b>
+    </div>
+    
+        
+            <article class="post i-card">
+                <h2 class="post-title">
+                    <a href="https://lwhile.github.io/post/raft-sharing">
+                        公司 raft 算法分享会内容
+                    </a>
+                </h2>
+                <div class="post-info">
+                    <time class="post-time">2017-12-13</time>
+                    
+                        <a href="https://lwhile.github.io/tag/fen-bu-shi-xi-tong" class="post-tag i-tag
+                            i-tag-success">
+            #分布式系统
+        </a>
+                        
+                        <a href="https://lwhile.github.io/tag/raft" class="post-tag i-tag
+                            i-tag-success">
+            #raft
+        </a>
+                        
+                        <a href="https://lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
+                            i-tag-banana">
+            #计算机
+        </a>
+                        
+                </div>
+                <div class="post-article">
+                    
+                            <div class="post-content">
+                                
+                                        <div class="post-content-content">
+                                            今天在团队内部做了一次分享，给组内的各位大神介绍了raft算法。老实说讲的内容中还是有些欠缺，主要是在内容深度上不够，只能按照论文上的内容讲，没有一些自己的提炼，再多多摸索吧。
+这次会议我没有做PPT，只是打了一个文字稿，然后在白板上讲。下面贴的内容是按照文字稿复制过来的，当然和会议上实际讲的所有出入，就当做给没有听说过raft算法的朋友当做一个入门介绍吧。正儿八经学习还是得找其他资源，比如论文原文。
+-----------------------分割线---------------------------
+我会去了解raft是因为在来公司实习，尤其是接触到prometheus之后，就去网上搜了一下学习分布式系统要看哪些东西，然后就搜出了raft。老实说我最开始是一点都看不懂它在讲什么的，而且也看不到它的实际作用，感觉就是没必要整出这么一个东西来。我打印出来的论文也一直放在屋里吃灰。
+变化是在体验到influxdb-relay和influxdb集群版的差别后，我开始渐渐意识到一致性算法对于分布式系统的重要性。relay它只是简单得将客户端的数据转发给多个influxdb实例，至于每个实例成不成功，它没法保证。后来我试用了InfluxDB带有集群功能的企业版，那个确实就是我们想要的功能，往任何一个节点写入任何一条数据，只要服务器告诉我写成功了，无论接下来这个集群发生了怎样极端的故障, 我还是基本能相信这个数据是没问题的.而Influxdb的集群版就正是使用了raft算法保证了这种一致性，并且他们用的还是和consul同样的库。这时候我再去学raft就和几个月前的感受不大一样了。
+raft的论文是斯坦福一个计算机博士在13年发的,而另外一个一致性算法paxos是1990发的.对比下发现最近几年出来的项目很多都是用了raft而不是paxos,像etcd,consul,tidb这些都是用raft,而ceph用的是paxos,ceph查了下是10年开始的项目.所以还是能看出raft与同类比起来的一些优点的,应该确实是比较容易学.
+然后接下来我就讲下raft它的算法过程,其实我也只是看了几遍论文,很多东西我的理解也不是很通透,这个要真正拿去实践下才能做得到.我就大概按照论文的内容讲,会省略掉一些内容.
+我们先假设一个场景, 就拿consul来举例, 假设我们现在有一个3节点的consul集群,nodeA,nodeB,nodeC.这3个节点都是运行在consul的server模式下.我们看下raft会怎样处理这3个节点.
+在raft里面, 有3种角色, 领导者, 候选者,跟随者.
+领导者的负责管理集群,并处理来自用户的请求.
+跟随者是领导者的一个副本, 它会在领导者出现故障的时候顶替它.
+而从跟随者变成领导者,有一个中间状态,那就是候选者.
+以我们上面的3个consul节点来做例子.我们先启动了3个consul,这时候他们都处于跟随者的状态,这也是raft算法中节点启动时的初始状态.跟随者启动之后,他们会等待一段时间,如果这个时间内没有领导者发心跳包给它,那么跟随者就会进入候选者的状态.进入选举阶段,这也是raft算法中3个子问题中的第一个.
+如何选举的呢?每个候选者手中都有一张票, 这张牌可以投给集群任意一个节点.比如nodeA可以投给nodeB,nodeC,当然也可以投给自己.只要一个节点能够拿到大多数节点的选票,那么它就当选为leader.比如,nodeA拿到了nodeB,nodeC两张票,那么它就是leader
+但是实际上raft的算法的选举没有这么简单,因为这种方法有一个问题,那就是选票可能会被瓜分掉.比如nodeA,nodeB,nodeC,他们分别把票都投给了自己,或者A投给B,B投给C,C投给A,这样谁也当不成leader.
+raft是怎么解决这个问题的呢, 它引入两个概念,一个是任期,一个是选举超时时间.任期就是把时间轴切成一个个可以被编号的时间段.比如,我们上面3个节点启动的时候,都会进入第一个任期.而选举的超时时间是定义每个节点等待投票信息的最长时间的
+还是拿我们上面的三个节点举例子.A,B,C启动,进入跟随者状态,接下来等不到领导者的心跳过来,都进入候选者状态,开始请求选举leader,这时候任期是1.raft会给每个节点在一个范围内随机设置一个超时时间,比如A是10ms,B是20ms,C是30ms.如果A在10ms内当不成leader, 那么它就给自己的任期号加1,变成任期2,重新开始投票.这时候B和C还是任期1.而且raft有个限制,就是会拒绝来自任期号低于自己的节点的选票,.比如这时候只能A投给B和C, B和C如果投给A那么会被A拒绝掉.并且节点在通讯的时候发现有比自己的任期号更高的,它会也马上提升自己的任期.用这种方法几轮下来,是一定可以选出一个leader的.
+上面讲的这个选举问题,是raft三个子问题中的的第一个,领导选举.接下来我们看第二个问题,日志复制.
+当leader被选举出来后,我们就假设A当上了leader.集群开始能够处理用户的请求.我们可以把用户的每一个请求都当成是一个指令,leader的一个重要任务,就是要将这些指令复制到集群的其他节点去.raft里面用日志这个词来描述这样一种指令,日志里面会记录一个任期号,一个日志的编号,还有执行的指令.Raft会维护日志,让他们能够满足下面的两个很重要的特性:
+1. 如果两个日志条目拥有相同的日志编号和任期编号,那么两个日志就存储了相同的指令
+2. 如果两个日志条目拥有相同的日志编号和任期编号,那么他们前面的日志所有日志都会相同
+leader会决定什么时候可以应用日志中的指令,这种可以被应用的日志的状态在raft里面被描述为commited,所有commited的日志都会持久化存储.一个日志怎样才能算是commited呢.raft里面的定义就是,leader已经能确认这个日志已经被复制到大多数节点上面.
+它的流程是这样的:比如我们有一个请求是要存一个kv到consul里面,请求到了leader nodeA这里,nodeA会将包含请求中的指令的日志发送到nodeB和nodeC上面.nodeA会等待他们返回的结果, 如果写入的节点能够超过半数,那么nodeA才会告诉客户端请求是成功的.
+如果leader永远正常运行,那么理论上那些能够正常工作的副本的日志是会和leader保持一致的.但现实情况是leader总会有崩溃的那一天.比如NodeA在复制日志给B和C的过程中,B复制好了,但C还没复制好时nodeA就崩溃了,这种情况就会导致集群中的状态不一致,更加极端的是leader可能会在短时间内更换多次,这种情况下,集群内的日志会更加混乱.
+(画图)
+前面说过一个合格的一致性算法,只要leader告诉我们请求是ok的,那么不管发生什么极端的情况,任何时候任何节点的数据应该都是ok,但是像上面上面这种情况完全是有可能出现的,raft是如何保证数据的安全性呢?接下来就是raft的第三个子问题,安全性.
+安全性一:
+选举限制:
+raft在选择leader的时候还有一个限制,就是这个候选人在选举时要联系集群中的大部分节点,验证这个候选者是不是拥有所有已经提交过的日志.如果没有,那么它就不可能当上leader.
+raft的比较规则是这样的:
+如果两份日志最后的条目的任期号不同，那么任期号大的日志更加新。如果两份日志最后的条目任期号相同，那么日志比较长的那个就更加新。
+安全性二:
+对提交旧日志进行限制,在提交当前term的日志之前,不准leader提交当前任期之前的任何日志.
+-------------------------------------分割线--------------------------
+准备的草稿只有这些了，昨晚准备到12点多，挡不住困意只能作罢，第二天再临场讲了一些内容。
+留张照片做个纪念，以后不知道还会不会有。
+
+https://mp.weixin.qq.com/s/4YXcMMvkk2EJGib_URGhLw
+
+                                        </div>
+                                        
+                                            <a class="btn btn-text" href="https://lwhile.github.io/post/raft-sharing">Read More ~</a>
+                            </div>
+                </div>
+            </article>
+            
+                <!-- 翻页 -->
+                
+                </div>
+                <!--  -->
+                <div class="main-container-middle"></div>
+                <!--  -->
+                <div id="sidebar" class="main-container-right">
+
+                    <!-- 个人信息 -->
+                    
+    <div class="id_card i-card">
+        <div class="id_card-avatar" style="background-image: url(https://lwhile.github.io/images/avatar.png?v=1576340775194)">
+        </div>
+        <h1 class="id_card-title">
+            神蛋杂谈
+        </h1>
+        <h2 class="id_card-description">
+            
+        </h2>
+        <!--  -->
+        <div class="id_card-sns">
+            <!-- github -->
+            
+                    <!-- twitter -->
+                    
+                            <!-- weibo -->
+                            
+                                    <!-- facebook -->
+                                    
+
+        </div>
+    </div>
+    
+
+                        <!-- 公告栏 -->
+                        
+
+                </div>
+            </div>
+
+
+
+            <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://lwhile.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+    <script>
+        $('#sidebar').stickySidebar({
+            topSpacing: 80,
+            // bottomSpacing: 60
+        });
+    </script>
+</body>
+
+</html>

@@ -5,7 +5,7 @@
 <meta name="description" content="" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>
-    打个小卡 | 神蛋杂谈
+    使用 override 解决 dep 中的依赖冲突 | 神蛋杂谈
 </title>
 <link rel="shortcut icon" href="https://lwhile.github.io/favicon.ico?v=1576340775194">
 <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
@@ -99,28 +99,58 @@
                 <div id="content" class="main-container-left">
                     <article class="post i-card">
                         <h2 class="post-title">
-                            打个小卡
+                            使用 override 解决 dep 中的依赖冲突
                         </h2>
                         <div class="post-info">
-                            <time class="post-time">2017-11-11</time>
+                            <time class="post-time">2018-05-02</time>
                             
-                                <a href="https://lwhile.github.io/tag/sui-sui-nian" class="post-tag i-tag
-                            i-tag-">
-                            #碎碎念
+                                <a href="https://lwhile.github.io/tag/5UKnY2CH9d" class="post-tag i-tag
+                            i-tag-other_2">
+                            #Go
                         </a>
                                 
                         </div>
                         
-                            <div class="post-feature-image" style="background-image: url('https://lwhile.github.io/post-images/litter-memory-2017.jpeg')"></div>
-                            
                                 <div class="post-content">
-                                    <p>今天领到我人生中的第八份工资，解决掉这个月信用卡的账单，第一次有了超过5位数的存款。</p>
-<p>元旦那天，我在奇妙清单里写下了几个目标，其中最重要的一个是能够去陌生城市独立生存下来。三月份的时候，很幸运得到一个实习的机会。如我所愿，真的成了一名程序员。</p>
-<figure data-type="image" tabindex="1"><img src="http://upload-images.jianshu.io/upload_images/1244770-9f92a14aa91c2280.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></figure>
-<p>接下来的那半年，每周要来回一次广州和肇庆，不断得平衡学校与公司之间的关系。入职的第一个星期，领导问我之前坚持过最久的一件事是什么，我说减肥。</p>
-<p>这八个月中间心态确实有崩过，但最终还是坚持了下来，到了现在。</p>
-<p>如果要问最近这一年我得到哪些成长，抛开我专业上的那些东西，我觉得最重要的，是将社会的模样从校园里面的那个轮廓，一天天得将细节渲染出来。见得越多，想要的越多，再看看自己有什么，心里就越来越恐慌，一点都不敢停下自己的脚步。</p>
-<p>这周突然开始更新公众号，看到两年前自己推的那些东西，自己也会笑出来。大学终究还是在离我们远去，想起学校里面的生活，不由觉得大学生活真的是人生中最幸福的时光，怕是以后都不会有了。</p>
+                                    <p>公司的 Go 项目使用 dep 做为依赖管理的工具，在使用的过程中，因为项目依赖比较复杂，经常会遇到依赖冲突导致 <code>dep ensure</code> 命令无法执行成功。</p>
+<p>比如，正在开发中的项目A依赖了B和C，而 B 项目也依赖了 C 项目。</p>
+<figure data-type="image" tabindex="1"><img src="https://upload-images.jianshu.io/upload_images/1244770-695fd170b2fe9ee4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="依赖关系.png"></figure>
+<p>A 项目的 Gopkg.toml</p>
+<pre><code class="language-toml">[[constraint]]
+  branch = &quot;master&quot;
+  name = &quot;B&quot;
+
+[[constraint]]
+  branch = &quot;master&quot;
+  name = &quot;C&quot;
+</code></pre>
+<p>B 项目的 Gopkg.toml</p>
+<pre><code>[[constraint]]
+  branch = &quot;master&quot;
+  name = &quot;C&quot;
+</code></pre>
+<p>接下来 A 项目因为开发的需要在 C 项目中新开了分支。在该分支合并进 master 分支之前，需要在 A 项目的 <code>Gopkg.toml</code>中指定分支名称。</p>
+<pre><code>[[constraint]]
+  branch = &quot;master&quot;
+  name = &quot;B&quot;
+
+[[constraint]]
+  branch = &quot;new_branch&quot;
+  name = &quot;C&quot;
+</code></pre>
+<p>这时候再执行   <code>dep ensure</code> 是无法成功的，会提示依赖发生了冲突。</p>
+<p>解决冲突的方法也很简单，在A项目的 <code>Gopkg.toml</code>中将C项目的<code>constraint</code>改为 <code>override</code> 就可以了。等到C项目的修改合并进 master 分支时，再将 constraint 改回来。</p>
+<pre><code>[[constraint]]
+  branch = &quot;master&quot;
+  name = &quot;B&quot;
+
+[[override]]
+  branch = &quot;new_branch&quot;
+  name = &quot;C&quot;
+</code></pre>
+<h2 id="constraint-与-override-的区别">constraint 与 override 的区别</h2>
+<p>dep 会如实得处理 constraint 类型的依赖，在这个例子中，尽管在 A 的依赖中将 C 的分支设置为 new_branch，但是在B项目中，引用的包还是依旧使用 master 分支 的代码。</p>
+<p>如果将A项目的 constraint 改为 override , 则会强制让 B 项目在拉取 C 项目的代码时，拉取的是 new_branch 分支上的代码，避免因为协同开发导致的问题。</p>
 
                                 </div>
                     </article>
@@ -128,9 +158,9 @@
                     
                         <div class="next-post">
                             <div class="next">下一篇</div>
-                            <a href="https://lwhile.github.io/post/etcd-watch-source-code">
+                            <a href="https://lwhile.github.io/post/exponential-backoff">
                                 <h3 class="post-title">
-                                    Etcd watch源码阅读
+                                    指数退避
                                 </h3>
                             </a>
                         </div>
@@ -143,32 +173,46 @@
                 <!-- right -->
                 <div id="sidebar" class="main-container-right">
                     
-                                <!-- id-card -->
-                                
-    <div class="id_card i-card">
-        <div class="id_card-avatar" style="background-image: url(https://lwhile.github.io/images/avatar.png?v=1576340775194)">
-        </div>
-        <h1 class="id_card-title">
-            神蛋杂谈
-        </h1>
-        <h2 class="id_card-description">
-            
-        </h2>
-        <!--  -->
-        <div class="id_card-sns">
-            <!-- github -->
-            
-                    <!-- twitter -->
-                    
-                            <!-- weibo -->
-                            
-                                    <!-- facebook -->
-                                    
+                        <!-- toc -->
+                        
+    <div class="toc-card i-card ">
+        <div class="toc-title i-card-title">目录</div>
+        <div class="toc-content">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#constraint-%E4%B8%8E-override-%E7%9A%84%E5%8C%BA%E5%88%AB">constraint 与 override 的区别</a></li>
+</ul>
+</li>
+</ul>
 
         </div>
+        <script>
+            function locateCatelogList() {
+                /*获取文章目录集合,可通过:header过滤器*/
+                var alis = $('.post-content :header');
+                /*获取侧边栏目录列表集合**/
+                var sidebar_alis = $('.markdownIt-TOC a');
+                /*获取滚动条到顶部的距离*/
+                var scroll_height = $(window).scrollTop();
+                for (var i = 0; i < alis.length; i++) {
+                    /*获取锚点集合中的元素分别到顶点的距离*/
+                    var a_height = $(alis[i]).offset().top;
+                    if (a_height < scroll_height) {
+                        /*高亮显示*/
+                        sidebar_alis.removeClass('on');
+                        $(sidebar_alis[i]).addClass('on');
+                    }
+                }
+            }
+            $(function() {
+                /*绑定滚动事件 */
+                $(window).bind('scroll', locateCatelogList);
+            });
+        </script>
     </div>
     
-                                    
+                            
 
                 </div>
 
