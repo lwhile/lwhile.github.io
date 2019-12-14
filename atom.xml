@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://lwhile.github.io</id>
     <title>神蛋杂谈</title>
-    <updated>2019-12-14T16:42:10.210Z</updated>
+    <updated>2019-12-14T16:43:23.368Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://lwhile.github.io"/>
     <link rel="self" href="https://lwhile.github.io/atom.xml"/>
@@ -565,6 +565,1047 @@ sleep = min(cap, base * 2 ** attempt)</p>
 <p>对于未来的计划，在技术上，一方面我还是想提高自己的编码能力，这个没得选，就是多写，并且写有难度的代码。另一个还是想学习下 elixir / erlang，然后系统得学习下分布式系统。我一直认为计算机科学家设计的分布式系统里面，蕴藏着一部分社会运行的奥秘。</p>
 <p>今年将是我毕业后正式脱离学生身份的第一年，接下来可谓任重而道远。感激那些在我成长路上帮助过我、包容过我的人。</p>
 <figure data-type="image" tabindex="1"><img src="https://lwhile.github.io/post-images/1576340629482.jpeg" alt=""></figure>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[公司 raft 算法分享会内容]]></title>
+        <id>https://lwhile.github.io/post/raft-sharing</id>
+        <link href="https://lwhile.github.io/post/raft-sharing">
+        </link>
+        <updated>2017-12-12T16:15:22.000Z</updated>
+        <content type="html"><![CDATA[<p>今天在团队内部做了一次分享，给组内的各位大神介绍了raft算法。老实说讲的内容中还是有些欠缺，主要是在内容深度上不够，只能按照论文上的内容讲，没有一些自己的提炼，再多多摸索吧。</p>
+<p>这次会议我没有做PPT，只是打了一个文字稿，然后在白板上讲。下面贴的内容是按照文字稿复制过来的，当然和会议上实际讲的所有出入，就当做给没有听说过raft算法的朋友当做一个入门介绍吧。正儿八经学习还是得找其他资源，比如论文原文。</p>
+<p>-----------------------分割线---------------------------</p>
+<p>我会去了解raft是因为在来公司实习，尤其是接触到prometheus之后，就去网上搜了一下学习分布式系统要看哪些东西，然后就搜出了raft。老实说我最开始是一点都看不懂它在讲什么的，而且也看不到它的实际作用，感觉就是没必要整出这么一个东西来。我打印出来的论文也一直放在屋里吃灰。</p>
+<p>变化是在体验到influxdb-relay和influxdb集群版的差别后，我开始渐渐意识到一致性算法对于分布式系统的重要性。relay它只是简单得将客户端的数据转发给多个influxdb实例，至于每个实例成不成功，它没法保证。后来我试用了InfluxDB带有集群功能的企业版，那个确实就是我们想要的功能，往任何一个节点写入任何一条数据，只要服务器告诉我写成功了，无论接下来这个集群发生了怎样极端的故障, 我还是基本能相信这个数据是没问题的.而Influxdb的集群版就正是使用了raft算法保证了这种一致性，并且他们用的还是和consul同样的库。这时候我再去学raft就和几个月前的感受不大一样了。</p>
+<p>raft的论文是斯坦福一个计算机博士在13年发的,而另外一个一致性算法paxos是1990发的.对比下发现最近几年出来的项目很多都是用了raft而不是paxos,像etcd,consul,tidb这些都是用raft,而ceph用的是paxos,ceph查了下是10年开始的项目.所以还是能看出raft与同类比起来的一些优点的,应该确实是比较容易学.</p>
+<p>然后接下来我就讲下raft它的算法过程,其实我也只是看了几遍论文,很多东西我的理解也不是很通透,这个要真正拿去实践下才能做得到.我就大概按照论文的内容讲,会省略掉一些内容.</p>
+<p>我们先假设一个场景, 就拿consul来举例, 假设我们现在有一个3节点的consul集群,nodeA,nodeB,nodeC.这3个节点都是运行在consul的server模式下.我们看下raft会怎样处理这3个节点.</p>
+<p>在raft里面, 有3种角色, 领导者, 候选者,跟随者.</p>
+<p>领导者的负责管理集群,并处理来自用户的请求.</p>
+<p>跟随者是领导者的一个副本, 它会在领导者出现故障的时候顶替它.</p>
+<p>而从跟随者变成领导者,有一个中间状态,那就是候选者.</p>
+<p>以我们上面的3个consul节点来做例子.我们先启动了3个consul,这时候他们都处于跟随者的状态,这也是raft算法中节点启动时的初始状态.跟随者启动之后,他们会等待一段时间,如果这个时间内没有领导者发心跳包给它,那么跟随者就会进入候选者的状态.进入选举阶段,这也是raft算法中3个子问题中的第一个.</p>
+<p>如何选举的呢?每个候选者手中都有一张票, 这张牌可以投给集群任意一个节点.比如nodeA可以投给nodeB,nodeC,当然也可以投给自己.只要一个节点能够拿到大多数节点的选票,那么它就当选为leader.比如,nodeA拿到了nodeB,nodeC两张票,那么它就是leader</p>
+<p>但是实际上raft的算法的选举没有这么简单,因为这种方法有一个问题,那就是选票可能会被瓜分掉.比如nodeA,nodeB,nodeC,他们分别把票都投给了自己,或者A投给B,B投给C,C投给A,这样谁也当不成leader.</p>
+<p>raft是怎么解决这个问题的呢, 它引入两个概念,一个是任期,一个是选举超时时间.任期就是把时间轴切成一个个可以被编号的时间段.比如,我们上面3个节点启动的时候,都会进入第一个任期.而选举的超时时间是定义每个节点等待投票信息的最长时间的</p>
+<p>还是拿我们上面的三个节点举例子.A,B,C启动,进入跟随者状态,接下来等不到领导者的心跳过来,都进入候选者状态,开始请求选举leader,这时候任期是1.raft会给每个节点在一个范围内随机设置一个超时时间,比如A是10ms,B是20ms,C是30ms.如果A在10ms内当不成leader, 那么它就给自己的任期号加1,变成任期2,重新开始投票.这时候B和C还是任期1.而且raft有个限制,就是会拒绝来自任期号低于自己的节点的选票,.比如这时候只能A投给B和C, B和C如果投给A那么会被A拒绝掉.并且节点在通讯的时候发现有比自己的任期号更高的,它会也马上提升自己的任期.用这种方法几轮下来,是一定可以选出一个leader的.</p>
+<p>上面讲的这个选举问题,是raft三个子问题中的的第一个,领导选举.接下来我们看第二个问题,日志复制.</p>
+<p>当leader被选举出来后,我们就假设A当上了leader.集群开始能够处理用户的请求.我们可以把用户的每一个请求都当成是一个指令,leader的一个重要任务,就是要将这些指令复制到集群的其他节点去.raft里面用日志这个词来描述这样一种指令,日志里面会记录一个任期号,一个日志的编号,还有执行的指令.Raft会维护日志,让他们能够满足下面的两个很重要的特性:</p>
+<p>1. 如果两个日志条目拥有相同的日志编号和任期编号,那么两个日志就存储了相同的指令</p>
+<p>2. 如果两个日志条目拥有相同的日志编号和任期编号,那么他们前面的日志所有日志都会相同</p>
+<p>leader会决定什么时候可以应用日志中的指令,这种可以被应用的日志的状态在raft里面被描述为commited,所有commited的日志都会持久化存储.一个日志怎样才能算是commited呢.raft里面的定义就是,leader已经能确认这个日志已经被复制到大多数节点上面.</p>
+<p>它的流程是这样的:比如我们有一个请求是要存一个kv到consul里面,请求到了leader nodeA这里,nodeA会将包含请求中的指令的日志发送到nodeB和nodeC上面.nodeA会等待他们返回的结果, 如果写入的节点能够超过半数,那么nodeA才会告诉客户端请求是成功的.</p>
+<p>如果leader永远正常运行,那么理论上那些能够正常工作的副本的日志是会和leader保持一致的.但现实情况是leader总会有崩溃的那一天.比如NodeA在复制日志给B和C的过程中,B复制好了,但C还没复制好时nodeA就崩溃了,这种情况就会导致集群中的状态不一致,更加极端的是leader可能会在短时间内更换多次,这种情况下,集群内的日志会更加混乱.</p>
+<p>(画图)</p>
+<p>前面说过一个合格的一致性算法,只要leader告诉我们请求是ok的,那么不管发生什么极端的情况,任何时候任何节点的数据应该都是ok,但是像上面上面这种情况完全是有可能出现的,raft是如何保证数据的安全性呢?接下来就是raft的第三个子问题,安全性.</p>
+<p>安全性一:</p>
+<p>选举限制:</p>
+<p>raft在选择leader的时候还有一个限制,就是这个候选人在选举时要联系集群中的大部分节点,验证这个候选者是不是拥有所有已经提交过的日志.如果没有,那么它就不可能当上leader.</p>
+<p>raft的比较规则是这样的:</p>
+<p>如果两份日志最后的条目的任期号不同，那么任期号大的日志更加新。如果两份日志最后的条目任期号相同，那么日志比较长的那个就更加新。</p>
+<p>安全性二:</p>
+<p>对提交旧日志进行限制,在提交当前term的日志之前,不准leader提交当前任期之前的任何日志.</p>
+<p>-------------------------------------分割线--------------------------</p>
+<p>准备的草稿只有这些了，昨晚准备到12点多，挡不住困意只能作罢，第二天再临场讲了一些内容。</p>
+<p>留张照片做个纪念，以后不知道还会不会有。</p>
+<figure data-type="image" tabindex="1"><img src="https://upload-images.jianshu.io/upload_images/1244770-eabecabdd751710e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></figure>
+<p>https://mp.weixin.qq.com/s/4YXcMMvkk2EJGib_URGhLw</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[使用 Consul 实现分布式环境下的 Leader 选举]]></title>
+        <id>https://lwhile.github.io/post/consul-leader-election</id>
+        <link href="https://lwhile.github.io/post/consul-leader-election">
+        </link>
+        <updated>2017-12-01T16:13:57.000Z</updated>
+        <content type="html"><![CDATA[<p>想象这样一种业务场景：你在一个分布式环境中部署了一个任务通知系统，或者一个定时任务系统，为了做高可用，每一个节点你都部署了一整套完整的服务。</p>
+<p>很快你就会发现，用户会收到重复的通知信息，或者相同的任务也会被执行了多遍。显然这是不行的。</p>
+<p>为了让我们的系统能够正常运行，并且又能实现高可用形式的部署，我们需要在这几个节点中选出一个Leader,做为最终执行任务的唯一节点。这篇文章将探讨如何实现这样一种需求，并且介绍如何使用consul来选举出我们的Leader。</p>
+<p>一致性问题<br>
+我们的问题属于分布式一致性问题的范畴，即在分布式环境下，结点/服务之间如何做到类似单机的运行环境。这个问题有多重要呢，基本上只要是一个正常的分布式系统，一致性都会是一个必须要考虑的问题。这有点像你在打LOL或者吃鸡，你和队友们得保持战术的一致才能控制得住局面。从某个程度上讲，你和队友就组成了一个分布式系统。</p>
+<p>解决分布式一致性的算法很多，但在工业界大规模使用的只有两个：Paxos和Raft。Paxos的典型代表有Google的Chubby,还有Apache基金会的Zookeeper，这个Java的同学应该有听说过。Raft的代表有Etcd和TiKV,前者已经成为许多系统不可或缺的一部分，包括Kubernetes,而后者已经在成为NewSQL的代表作上一路狂奔着。不过这里得提一句，不管是Google还是Pingcap（TiKV的开发商）,都对Paxos和Raft应用到工业软件上做了优化。</p>
+<p>要正确得实现了Paxos和Raft算法都不是一件特别容易的事，尤其是Paxos，Raft还好些。但如果想每一个服务都嵌入一个Paxos或者Raft，这对于维护将是一场灾难。Google的做法是使用Chubby作为一致性的基础服务提供者，在这之上提供分布式锁和Leader选举的服务（是不是有点PaaS的味道）。而这篇文章将要使用的，是一个能提供类似服务的开源软件：Consul</p>
+<p>使用Consul<br>
+回到这篇文章的主题，要解决文章最开始提到的那个问题，我们可以在几个服务之间选择一个Leader出来，具体的任务交给Leader，其他结点在Leader出现问题的时候再补上去成为一个新的Leader。我们将Leader的选举交给Consul帮我们解决，Consul只要为我们做一件事就行：给我们一把分布式的锁，哪个服务能拿到这个锁，谁就是Leader。</p>
+<p>Consul在我们公司被用来做域名服务和建康检查，而它刚好提供了一个基于Raft算法的Kv store(Kv store可以作为分布式锁的实现基础)的功能。我们可以在这个kv store里面写入一对kv, key是一个固定的值，而value则是能够唯一代表节点/服务的ID，通过Value我们就可以知道谁是Leader。</p>
+<p>Consul提供了一个Session机制，用它来代表服务与Consul节点之间的会话关系，并且能提供一个代表这个会话的Session ID,这个ID将作为上面提到的Value写入kv中。</p>
+<p>整个流程经过几次调整，最后设计出来是这样的：</p>
+<p>服务启动时，向Consul注册一个Session，得到一个Session ID。</p>
+<p>将Session ID作为Value，字符串leader(自由定义)作为key，写入到KV中。</p>
+<p>若写入成功，则当选为Leader.若写入失败，则表示竞选失败。</p>
+<p>每个Session都会有一个TTL（我们公司定的是Consul的最小值10s），当选为Leader的服务需要定时延长改TTL。比如每隔5s延长一次。</p>
+<p>竞选失败的节点，则在后台轮询，不断尝试成为Leader。</p>
+<p>业务活动发起时，先检查当前所在节点是否是Leader,如果是才能真正发起业务，如果不是，则丢弃。</p>
+<p>这样我们就可以解决文章开始时提到的那个问题了。</p>
+<p>感觉文章写飘了，说到的东西有点多，Consul的这个点反而没有什么好讲的。其实重点是一致性算法和分布式锁的实现，有兴趣的同学可以看下相关的论文，Google搜一下就有了。笔者最近也在阅读和翻译谷歌实现Chubby的那篇论文，翻译的内容挂在Github上，不过还没有翻译完成，有兴趣的同学欢迎一起翻译，在Github搜”Chubby中文”就能找到项目了，或者点击原文链接也行。</p>
+<p>https://mp.weixin.qq.com/s/gkA1qDx8e3XrNXXnxLyHfQ</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[如何设计监控平台的告警组件]]></title>
+        <id>https://lwhile.github.io/post/how-to-design-monitor-platform</id>
+        <link href="https://lwhile.github.io/post/how-to-design-monitor-platform">
+        </link>
+        <updated>2017-11-19T16:12:23.000Z</updated>
+        <content type="html"><![CDATA[<p>当业务发展到一定程度的时候，开发人员会开始考虑在系统中引入监控系统来对系统/业务进行监控。绝大多数监控系统都有两大核心功能，一个是工程师通过这个监控系统，能够对整个系统的运行情况一目了然，另外一个，就是当发生意外情况的时候，监控系统能将事件通知到人手上，毕竟人不可能24小时都在工作。这篇文章将要介绍的，就是第二个核心功能的承担着，告警组件。</p>
+<h2 id="项目背景">项目背景</h2>
+<p>我们公司目前的监控系统采用的是TICK架构中的TI,即用Telegraf采集数据，Influxdb做存储。C我们用了更加流行的Grafana做了替换。至于我们为什么选择了Influxdb，可以参考这篇文章：InfluxDB与Prometheus用于监控系统上的对比</p>
+<p>剩下K，即Kapacitor,我们最后抛弃了它，主要还是因为Kapacitor的太过于臃肿，上手和维护成本太高，很多功能我们都用不上，还不如自己开发一个。而Grafana的报警功能其实还可以，但是对于我们来说有个不大不小的缺陷，这里就不提了。于是自己心里先把实现思路过了一遍，觉得能Hold得住，就向领导请示想自己开发，接下来轮子就造起来了。</p>
+<h2 id="需求与设计原则">需求与设计原则</h2>
+<p>作为一个核心组件，我给自己先定了一个最基本的目标：稳定。功能多不多、炫不炫要让位给稳定性。</p>
+<p>接下来开始思考告警组件的两个基本需求：通知，和异常事件的发现。</p>
+<p>通知方面，邮件的方式是必不可少的。另外因为我们公司有自己的IM产品线，所以支持Webhook也是要留在考虑项里面。至于短信这些和客户的需求耦合度比较高，所以暂不考虑。</p>
+<p>而异常事件的发现，我选择参考Kapacitor的方式，主动去DB做查询，拿到数据再做触发的判断。这种方式有个缺点，如果数据库挂了，那么数据的流入端就断了，这为系统的可用性增加了一个不确定性因素。但我们在Influxdb前面使用relay做了高可用网关，而在我们集群中relay也是高可用的，这可以抵消掉一些上面的不确定性因素。</p>
+<p>但是反过来，如果参考Prometheus或者Open-Falcon的方式，在数据送入数据库之前，先经过告警组做判断，我们目前的监控系统就需要增加一个网关，或者将告警功能嵌入relay里面，这样一来相当于监控的数据流在进入DB前会经过两扇门，每一扇都会降低整个系统一定的吞吐量。还有一个点不得不考虑，对配置的每一次修改都需要重启程序，这势必会造成数据的丢失。为了解决这个问题，Prometheus和Open-Falcon都是将待进入DB的数据复制一份，导到告警组件这里来，而这又需要对采集组件的配合。所以基于上面基点的考虑，我就选择了主动去DB做查询的方式。</p>
+<p>说完上面两个基本需求，还有一个定制化的需求也要考虑，我们希望能在我们的虚拟机管理平台上像主流的公有云厂商一样能够让用户配置告警的策略，所以这引入另外一个需求：对外暴露易操作的API，让前端妹子调用。</p>
+<h2 id="内部设计">内部设计</h2>
+<p>明确了基本需求后，接下来开始内部的设计。为了理清思路，我写下了一份我（从使用者的角度）想要的配置文件（yaml格式）,来帮助我对事物进行抽象：</p>
+<pre><code class="language-go">alert:
+- name: 宿主机监控
+type: influxdb
+url: http://120.25.127.4:8086
+db: telegraf
+interval: 2s
+query:
+- name: cpu空闲值
+sql: SELECT usage_idle FROM cpu WHERE time &gt; now() - 1m
+threshold: 100
+op: &quot;&lt;=&quot;
+- name: 内存使用率
+sql: SELECT used_percent FROM mem WHERE time &gt; now() - 1m
+op: &quot;&gt;=&quot;
+threshold: 50
+
+notifier:
+- name: 测试组
+enable: true
+type: mail 
+host: smtp.163.com
+port: 25
+username: qq912293672@163.com
+password: xxxxxx
+from: qq912293672@163.com
+to: [912293672@qq.com]
+</code></pre>
+<p>从配置文件上可以看到，我对告警组件抽象出了两个大的划分，一个是alert,抽象了数据的获取。一个是notifier,抽象了事件的通知。</p>
+<p>在alert里面，我赋予了alert几个属性，其中type用来标识数据库的类型，因为我希望这个告警组件能支持多个存储后端。接下来是query，sql属性让用户自定义数据的查询方式，并且用threshold和op表示触发的阀值以及如何触发。总的来说，我采用了将多个查询实体组合成一个告警单位。这是经过思考的结果，目的是为了避免通知风暴：即很多机器很不幸都出异常的时，多个事件将聚合成一个告警，而不是发出多个邮件，而每个邮件的内容却很少。</p>
+<p>而notifier的配置，我特意添加了type,也是为了支持多种通知方式，以及一个开关enable。</p>
+<p>将notifier与alert分开，以及alert中包含query的设计，其实也是从Grafana和prometheus中学到的思路。在此感谢下今天的开源文化，让我等普通人有机会学到别人优秀的设计理念。</p>
+<p>抽象得差不多后，可以考试编码了，按照分类，将代码主要分为3个模块，notify，alert,service。其中service对应我们上面的第三个需求，对外暴露API。</p>
+<h2 id="接口设计">接口设计</h2>
+<p>开发语言上我使用的是Go，我们将会有多个query在执行，这刚好对上的Go的强项，并发。下面看下几个主要的接口：</p>
+<pre><code class="language-go">// Executor :type Executor interface {
+    Execute() ([]Result, error)
+    Interval() time.Duration
+    Config() Config
+    Close() error
+}
+</code></pre>
+<p>因为alert其实可以当做一个获取数据的执行单位，所以我在这里又抽象出了一个执行器Executor,接下来我们只需要让我们Alert实现该接口，就能被调用执行。</p>
+<pre><code class="language-go">type Analyzer interface {
+    Analyze(string, interface{}, QueryConfig) (Result, bool)
+}
+</code></pre>
+<p>Analyzer接口实现对各个监控系统数据处理。</p>
+<pre><code class="language-go">type Result interface {
+    String() string
+    QueryName() string}
+</code></pre>
+<p>Result接口抽象了监控系统的返回数据，屏蔽掉各个监控系统之间的数据差异。</p>
+<pre><code class="language-go">type Notifier interface {
+    Send(content string) error
+    Name() string
+    Type() string
+    To() []string
+    Enable() bool
+    Config() *Config
+}
+</code></pre>
+<p>通知接口</p>
+<p>接下来我们需要实现一个调度器，实现了对上面Executor的调度和控制：</p>
+<pre><code class="language-go">type Scheduler interface {
+    Run()
+    AddExecutor(executor.Executor)
+    RemoveExecutor(name string)
+    ExecutorExist(name string) bool
+    Stop()
+}
+</code></pre>
+<p>核心调度逻辑：</p>
+<pre><code class="language-go">runFn := func(schItem *scheduleItem) {
+        bf := bytes.NewBufferString(&quot;&quot;)
+        ticker := time.NewTicker(schItem.executor.Interval())
+        notiMap := make(map[string]int)
+        mutex := &amp;sync.RWMutex{}        for {            select {            // 定时器到期
+            case &lt;-ticker.C:
+                results, err := schItem.executor.Execute()                if err != nil {
+                    log.Error(err)                    continue
+                }
+                notifiers, err := adaper.ReadAllNotifier()                if err != nil {
+                    log.Error(err)                    continue
+                }                for _, result := range results {                    // 对通知数进行累加
+                    mutex.Lock()
+                    notiMap[result.QueryName()]++
+                    mutex.Unlock()                    // 通知数已经超过了限制
+                    log.Debugf(&quot;notiMap:%+v&quot;, notiMap)
+                    result := result                    if notiMap[result.QueryName()] &gt; notiSeqCount {                        if notiMap[result.QueryName()] == notiSeqCount+1 {                            go func(name string) {
+                                time.Sleep(notiSleepDuration)
+                                mutex.Lock()
+                                notiMap[name] = 0
+                                mutex.Unlock()
+                            }(result.QueryName())
+                        }                        continue
+                    }                    if _, err := bf.WriteString(result.String()); err != nil {
+                        log.Error(err)
+                    }
+                    bf.WriteString(&quot;&lt;br&gt;&quot;)
+                }
+                msgBody := bf.String()
+                bf.Reset()                // 内容为空则跳过通知
+                if msgBody == &quot;&quot; {                    continue
+                }                // 遍历通知器将报警发送出去
+                for _, notifier := range notifiers {
+                    log.Debugf(&quot;bool:%v&quot;, notifier.Enable())                    if !notifier.Enable() {                        continue
+                    }
+                    notifier := notifier                    go func() {
+                        err := notifier.Send(msgBody)                        if err != nil {
+                            log.Errorf(&quot;Send %s notify to %s fail:%s&quot;, notifier.Type(), notifier.To(), err.Error())                            return
+                        }
+                        log.Infof(&quot;Send %s notify to %s success&quot;, notifier.Type(), notifier.To())
+                    }()
+                }            // 收到退出信号
+            case &lt;-schItem.closeCh:
+                ticker.Stop()
+                log.Infof(&quot;Executor %s exit&quot;, schItem.executor.Config().Name)                return
+            }
+        }
+    }
+</code></pre>
+<p>上面的调度控制中，为了避免某个异常事件在短时间没有解决时，我实现了自己的一个控制逻辑：当同一个query的通知已经连续超过3次时，我会让它定制通知半小时。若半小时异常还继续，则再发三次通知给接受者，如此循环下去。</p>
+<p>最后还有HTTP API的实现以及对数据的存储。这属于常规的开发逻辑，和我们这个告警组件的关系不是很大，就不一一介绍了。</p>
+<h2 id="总结">总结</h2>
+<p>写这篇文章主要是总结下设计的思路，尤其是在几个核心问题上。在设计之初，除了告诉自己要保持住稳定性之外，还特别注意了如何对代码做到恰到好处的抽象，这也是最近半年看了那么多优秀开源项目的代码后的想法。老实说我这一次又对自己做得不满意，有机会我重构下整个组件。另外其实还有一个比较棘手的问题，就是如何让告警组件做到高可用（这无法通过简单部署多个服务就能实现，这样会导致通知事件的重复发送），这个问题最近正在解决，可以期待下一篇文章。</p>
+<p>https://mp.weixin.qq.com/s/qr8WyroAWqx4D85J89RbvQ</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Go语言究竟不一样在哪]]></title>
+        <id>https://lwhile.github.io/post/why-go-so-different</id>
+        <link href="https://lwhile.github.io/post/why-go-so-different">
+        </link>
+        <updated>2017-11-12T16:10:19.000Z</updated>
+        <content type="html"><![CDATA[<p>第一次听到Go语言是在什么时间已经想不起来了。</p>
+<p>我是14年进入的大学，在15年面试校内一个技术组织时，被问了解哪些服务端语言。那时候我提到了Go。不过正式把它列入学习计划，还要等到16年的十月份。后来在17年三月份出来实习使用Go做开发，才有更多的机会将它投入实践中。</p>
+<p>在Go语言之前，我学习了C，C++， Java，Python。Go语言是唯一一门我认为自己能算得上掌握的语言。</p>
+<p>这门语言最与众不同的地方在于，将写并发型的代码变得异常容易。另一个能在简洁程度（指并发）上能和它一比的，大概只有Actor世界里的Erlang/Elixir了。</p>
+<p>在继续介绍Go之前我觉得有必要提下它的老爹。不过我要说的不是谷歌(Go最开始是谷歌的内部项目)，而是计算机领域的那三尊神。</p>
+<p>Ken Thompson</p>
+<p>Rob Pike</p>
+<p>Robert Griesemer</p>
+<p>如果你知道C语言的作者叫做Dennis Ritchie，并且看过它的一张图片，就是这张：<br>
+<img src="http://upload-images.jianshu.io/upload_images/1244770-b4139e59247921a6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<blockquote>
+<p>你应该对这两位老头有印象，很多介绍C语言或者计算机导论的书都有这张照片。右边那位就是Dennis Ritchie，2011年他已经驾鹤西去，在他离世前的一个星期，地球上另一个传奇也走了，他叫做史蒂夫・乔布斯。那一年我刚考上高中，乔布斯走后凡客出了一件纪念衫和一本他的传记，我都买了，现在还留着。</p>
+</blockquote>
+<p>左边那位，就是另外的一尊神，Ken Thompson。Unix知道吧？他最先设计和实现出来的（我说最初的几个Unix版本内核是汇编写的你信吗？）C语言的前身—— B语言，他弄的。Plan9，他参与了。正则表达式和UTF-8编码的设计，他也凑了一脚。在大牛这个称谓泛滥的今天，我只能用神这个字去形容我的这位偶像了。</p>
+<p>UTF-8还有另外一个发明者，和Ken一样也是Unix的成员，他就是目前Go语言的实际控制者，Rob Pike。你不一定会写Go代码，但你一定对Go那个萌贱萌贱的Logo有印象，这个Logo就是由Rob Pike的老婆设计的。<br>
+<img src="http://upload-images.jianshu.io/upload_images/1244770-24024501bee66802.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>最后一尊神，Robert Griesemer，手握几个个赫赫有名的项目，其中两个每天都会有一大波程序员它们打交道。这两个项目就是V8和JVM。Go 1.3之后改变了GC的工作机制，据说就是由他操刀。</p>
+<p>三位大神介绍完了，最终我想说的是，Go多多少少会凝聚他们三位在编程方面的宝贵经验，当初也是因为这一点我才会坚定得学习它，虽然我知道可能毕业的时候找不到一份Go这样一门新兴语言的工作。</p>
+<p>好了，题外话不继续了，接下来开始列举Go的一些特性。</p>
+<h2 id="1-goroutine">1. goroutine</h2>
+<p>目前在并发编程领域，我们有3种最基本的模型选择。</p>
+<p>第一种，即多进程/线程模型，这也是C/C++，Java最常用的并发模式。这种模型的好处是因为操作系统的原生支持，语言的实现者不用考虑其调度问题，交给操作系统就行了。但缺点就是会在并发数上升到一定程度后，系统需要将时间片更多花在进程/线程的上下文切换上。Linux默认的线程栈空间大小是1MB, 开一个1000个进程什么也不干，就需要接近1G的内存空间了。</p>
+<p>第二种，是事件驱动机制，典型如Nginx和Node。我们都知道Nginx和Node扛并发的能力很强，但实际上占用的资源却极少，很大一部分将所有的事件通过一些特殊的数据结构（如红黑树）组织起来，等到事件发生的时候再放到一个单一的进程/线程去处理。这个模型只适合IO密集型的工作场景，因为事件驱动的本质只是充分利用起CPU的空闲时间。</p>
+<p>第三种，就是Go使用的模型，协程模型，和Python，Lua，Erlang/Elixir里面的协程是同一个东西，只不过在Erlang/Elixir里面叫做process，Go里面叫做goroutine。我们知道线程比进程轻量，而协程则比线程更加轻量化。在Go里面，一个协程所占用的基本空间是2KB，只有线程的1/512。换句话说，起1000个空跑的goroutine，大概需要2MB的内存，而起1000个线程，则需要接近1GB。更低的内存占用，意味着可以开更多的并发单位，以及消耗更少的上下文切换时间。</p>
+<p>可以看一个简单的例子：</p>
+<pre><code class="language-go">func ShotOut() {
+	// 休眠1秒钟
+	time.Sleep(time.Second)
+
+	// 向控制台抵茶
+	fmt.Println(&quot;给大佬抵茶&quot;)
+}
+
+func main() {
+	for i := 0; i &lt; 5; i++ {
+		// 起5个goroutine
+		go ShotOut()
+	}
+
+	// 别让main退出，作用类似C里面的getchar()
+	select {}
+}
+</code></pre>
+<p>如果没有使用并发，那么执行这个程序需要5s，但实际执行时间会在1s左右，这证明我们调用ShotOut函数的时候确实是并发了。</p>
+<p>如果 Go 只是像 Python 或者Lua那样简单得引入了协程，那么它绝对不可能有今天的地位。Go的开发团队最伟大的地方在于，他们赋予了Go的runtime调度goroutine的能力，就像Linux内核调度线程那样。正是这一点，才让我们编写并发代码变得更加简单。</p>
+<h2 id="2channel">2.channel</h2>
+<p>说完goroutine，还有一个与它配合使用特性叫channel，可以说这两个特性加起来就锻造成了Go的屠龙宝刀。</p>
+<p>上面的例子中起了5个goroutine，这5个并发单位都比较简单，彼此之间不需要通信。如果需要呢？channel就是用于相互隔离间的并发单位进行通信的一个消息队列。</p>
+<p>看一个简单的例子：</p>
+<pre><code class="language-go">func main() {
+	// 声明一个存放int类型的channel
+	ch := make(chan int)
+
+	go func() {
+		// 休眠1秒钟
+		time.Sleep(time.Second)
+
+		// 向channel写入整数1
+		ch &lt;- 1
+	}()
+
+	go func() {
+		// 等待从通道中取出内容
+		res := &lt;-ch
+		fmt.Println(res) // 1s后输出1
+	}()
+
+	// 别让main退出，作用类似C里面的getchar()
+	select {}
+}
+</code></pre>
+<p>我们对最上面的例子改下需求，要求第一个goroutine执行完毕后，才能继续执行另外两个。第二波执行的这两个goroutine执行完毕后，才能执行最后剩下的2个gourotine。下面是Go的实现，大家可以想下如果用C++或者Java要如何写：</p>
+<pre><code class="language-go">func ShotOut() {
+	// 休眠1秒钟
+	time.Sleep(time.Second)
+
+	// 向控制台抵茶
+	fmt.Println(&quot;给大佬抵茶&quot;)
+}
+
+func main() {
+	// 声明两个存放int类型的channel
+	ch1 := make(chan int)
+	ch2 := make(chan int)
+
+	go func() {
+		// 休眠1秒钟
+		time.Sleep(time.Second)
+
+		// 第1次跑抵茶函数
+		ShotOut()
+
+		// 抵完第1杯茶，向channel写入整数1
+		ch1 &lt;- 1
+	}()
+
+	go func() {
+		// 等待第1杯茶递完的信号
+		&lt;-ch1
+
+		// 收到信号，开始抵第2和递3杯茶
+		ShotOut()
+		ShotOut()
+
+		// 通知最后2个
+		ch2 &lt;- 1
+	}()
+
+	go func() {
+		// 等待第2和第3杯茶递完
+		&lt;-ch2
+
+		// 递最后两杯
+		ShotOut()
+		ShotOut()
+	}()
+
+	// 别让main退出，作用类似C里面的getchar()
+	select {}
+}
+</code></pre>
+<blockquote>
+<p>注意加了go关键字在面前的函数都会以并发的方式进行</p>
+</blockquote>
+<h2 id="3-无依赖运行">3. 无依赖运行</h2>
+<p>如果说上面那两个特性要在并发环境下才能体现用处，那么Go可以编译成一个完成无依赖的二进制这一功能，是真的能大大提升你编程的意愿：因为你写的东西很容易传播给别人。</p>
+<p>就拿能向浏览器输出Hello World的Web程序来举例子好了</p>
+<pre><code class="language-go">pakcage main 
+
+import &quot;fmt&quot;
+import &quot;net/http&quot;
+
+func HelloWorld(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(&quot;Hello World&quot;))
+}
+
+func main() {
+	http.HandleFunc(&quot;/&quot;, HelloWorld)
+	http.ListenAndServe(&quot;:8080&quot;, nil)
+}
+</code></pre>
+<p>是的，你没看错，就这简单几句代码，跑起来它就是一个Web服务。而且通过 go build 命令编译后，将生成的二进制直接丢到服务器上就能跑了，Linux，Mac OS，Windows三平台都能用，而且性能非常强！想想如果是Java或者Python, Go的程序已经丢到服务器在跑了，Java的进度条可能还处在配置Tomcat上，Python则还在配置gunico和supervisor...</p>
+<h3 id="最后">最后</h3>
+<p>上面提到的三个特性，我觉得已经够向没了解过Go的用户介绍清楚他最与众不同的地方了。还有其他几个特性，比如非侵入性的接口，抛弃面相对象模型，多返回值，闭包等，这些相比其他语言我倒觉得不是其最大的亮点，留到以后有时间再介绍吧，这篇文章就已经写了我两个晚上了...</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[打个小卡]]></title>
+        <id>https://lwhile.github.io/post/litter-memory-2017</id>
+        <link href="https://lwhile.github.io/post/litter-memory-2017">
+        </link>
+        <updated>2017-11-10T16:06:20.000Z</updated>
+        <content type="html"><![CDATA[<p>今天领到我人生中的第八份工资，解决掉这个月信用卡的账单，第一次有了超过5位数的存款。</p>
+<p>元旦那天，我在奇妙清单里写下了几个目标，其中最重要的一个是能够去陌生城市独立生存下来。三月份的时候，很幸运得到一个实习的机会。如我所愿，真的成了一名程序员。</p>
+<figure data-type="image" tabindex="1"><img src="http://upload-images.jianshu.io/upload_images/1244770-9f92a14aa91c2280.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></figure>
+<p>接下来的那半年，每周要来回一次广州和肇庆，不断得平衡学校与公司之间的关系。入职的第一个星期，领导问我之前坚持过最久的一件事是什么，我说减肥。</p>
+<p>这八个月中间心态确实有崩过，但最终还是坚持了下来，到了现在。</p>
+<p>如果要问最近这一年我得到哪些成长，抛开我专业上的那些东西，我觉得最重要的，是将社会的模样从校园里面的那个轮廓，一天天得将细节渲染出来。见得越多，想要的越多，再看看自己有什么，心里就越来越恐慌，一点都不敢停下自己的脚步。</p>
+<p>这周突然开始更新公众号，看到两年前自己推的那些东西，自己也会笑出来。大学终究还是在离我们远去，想起学校里面的生活，不由觉得大学生活真的是人生中最幸福的时光，怕是以后都不会有了。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Etcd watch源码阅读]]></title>
+        <id>https://lwhile.github.io/post/etcd-watch-source-code</id>
+        <link href="https://lwhile.github.io/post/etcd-watch-source-code">
+        </link>
+        <updated>2017-11-10T15:57:50.000Z</updated>
+        <content type="html"><![CDATA[<p>公司的业务里面使用了Consul做服务发现, 发现其有一个watch机制.这个watch机制引起我的好奇, 因为刚好在看Etcd-raft的代码, Etcd也有类似的watch机制, 所以趁热打铁, 赶紧趁周末研究下etcd watch机制源码的实现.</p>
+<p>在看源码之前, 我们通过一个简单的例子, 看看Etcd的watch是如何使用的.</p>
+<ol>
+<li>先往Etcd写入一对KV</li>
+</ol>
+<blockquote>
+<p>curl http://127.0.0.1:2379/v2/keys/name -XPUT -d value=&quot;神蛋使者&quot;</p>
+</blockquote>
+<ol start="2">
+<li>Watch这对KV</li>
+</ol>
+<blockquote>
+<p>curl http://127.0.0.1:2379/v2/keys/name?wait=true</p>
+</blockquote>
+<p>如果一切正常, 这时候请求会被阻塞住.</p>
+<ol start="3">
+<li>新开一个终端, 修改存进去的KV</li>
+</ol>
+<blockquote>
+<p>curl http://127.0.0.1:2379/v2/keys/name -XPUT -d value=神蛋使者1号</p>
+</blockquote>
+<ol start="4">
+<li>阻塞的那个请求返回watch到的结果</li>
+</ol>
+<pre><code class="language-json">{
+  &quot;action&quot;:&quot;set&quot;,
+  &quot;node&quot;:{ 
+      &quot;key&quot;:&quot;/name&quot;,
+      &quot;value&quot;:&quot;神蛋使者1号&quot;,
+      &quot;modifiedIndex&quot;:25,
+     &quot;createdIndex&quot;:25
+  },
+   &quot;prevNode&quot;: {
+     &quot;key&quot;:&quot;/name&quot;,
+     &quot;value&quot;:&quot;神蛋使者&quot;,
+     &quot;modifiedIndex&quot;:24,
+     &quot;createdIndex&quot;:24
+   }
+  }
+</code></pre>
+<p>体验流程大概就是这样, 下面正式看源码.</p>
+<h2 id="接口定义">接口定义</h2>
+<pre><code class="language-go">type Watcher interface {
+	// Watch watches on a key or prefix. The watched events will be returned
+	// through the returned channel.
+	// If the watch is slow or the required rev is compacted, the watch request
+	// might be canceled from the server-side and the chan will be closed.
+	// 'opts' can be: 'WithRev' and/or 'WithPrefix'.
+	Watch(ctx context.Context, key string, opts ...OpOption) WatchChan
+
+	// Close closes the watcher and cancels all watch requests.
+	Close() error
+}
+</code></pre>
+<p>该接口定义了两个方法, Watch 和 Close</p>
+<p>Watch 方法返回一个WatchChan 类似的变量, WatchChan是一个channel, 定义如下:</p>
+<pre><code class="language-go">type WatchChan &lt;-chan WatchResponse
+</code></pre>
+<p>该通道传递WatchResponse类型</p>
+<pre><code class="language-go">type WatchResponse struct {
+	Header pb.ResponseHeader
+	Events []*Event
+
+	// CompactRevision is the minimum revision the watcher may receive.
+	CompactRevision int64
+
+	// Canceled is used to indicate watch failure.
+	// If the watch failed and the stream was about to close, before the channel is closed,
+	// the channel sends a final response that has Canceled set to true with a non-nil Err().
+	Canceled bool
+
+	// Created is used to indicate the creation of the watcher.
+	Created bool
+
+	closeErr error
+}
+</code></pre>
+<p>其中Event类型是一个gRPC生成的消息对象</p>
+<pre><code class="language-go">type Event struct {
+	// type is the kind of event. If type is a PUT, it indicates
+	// new data has been stored to the key. If type is a DELETE,
+	// it indicates the key was deleted.
+	Type Event_EventType `protobuf:&quot;varint,1,opt,name=type,proto3,enum=mvccpb.Event_EventType&quot; json:&quot;type,omitempty&quot;`
+	// kv holds the KeyValue for the event.
+	// A PUT event contains current kv pair.
+	// A PUT event with kv.Version=1 indicates the creation of a key.
+	// A DELETE/EXPIRE event contains the deleted key with
+	// its modification revision set to the revision of deletion.
+	Kv *KeyValue `protobuf:&quot;bytes,2,opt,name=kv&quot; json:&quot;kv,omitempty&quot;`
+	// prev_kv holds the key-value pair before the event happens.
+	PrevKv *KeyValue `protobuf:&quot;bytes,3,opt,name=prev_kv,json=prevKv&quot; json:&quot;prev_kv,omitempty&quot;`
+}
+</code></pre>
+<p>接下来看实现了Watcher接口的watcher类型</p>
+<pre><code class="language-go">// watcher implements the Watcher interface
+type watcher struct {
+	remote pb.WatchClient
+
+	// mu protects the grpc streams map
+	mu sync.RWMutex
+
+	// streams holds all the active grpc streams keyed by ctx value.
+	streams map[string]*watchGrpcStream
+}
+</code></pre>
+<p>watcher结构很简单, 只有3个字段. remote抽象了发起watch请求的客户端, streams是一个map, 这个map映射了交互的数据流.还有一个保护并发环境下数据流读写安全的读写锁.</p>
+<p>streams所属的watchGrpcStream类型抽象了所有交互的数据, 它的结构定义如下:</p>
+<pre><code class="language-go">type watchGrpcStream struct {
+	owner  *watcher
+	remote pb.WatchClient
+
+	// ctx controls internal remote.Watch requests
+	ctx context.Context
+	// ctxKey is the key used when looking up this stream's context
+	ctxKey string
+	cancel context.CancelFunc
+
+	// substreams holds all active watchers on this grpc stream
+	substreams map[int64]*watcherStream
+	// resuming holds all resuming watchers on this grpc stream
+	resuming []*watcherStream
+
+	// reqc sends a watch request from Watch() to the main goroutine
+	reqc chan *watchRequest
+	// respc receives data from the watch client
+	respc chan *pb.WatchResponse
+	// donec closes to broadcast shutdown
+	donec chan struct{}
+	// errc transmits errors from grpc Recv to the watch stream reconn logic
+	errc chan error
+	// closingc gets the watcherStream of closing watchers
+	closingc chan *watcherStream
+	// wg is Done when all substream goroutines have exited
+	wg sync.WaitGroup
+
+	// resumec closes to signal that all substreams should begin resuming
+	resumec chan struct{}
+	// closeErr is the error that closed the watch stream
+	closeErr error
+}
+</code></pre>
+<p>比较有意思的是, watchGrpcStream也包含了一个watcher类型的owner字段, watcher和watchGrpcStream可以互相引用到对方.同时又定义了watcher类型中已经定义过的remote,而且还不是指针类型, 这点不大明白作用是啥.</p>
+<p>还有几个字段值得关注, 一个是substreams, 看下它的定义和注释:</p>
+<pre><code class="language-go">// substreams holds all active watchers on this grpc stream
+substreams map[int64]*watcherStream
+</code></pre>
+<p>再看看watcherStream类型的定义:</p>
+<pre><code class="language-go">// watcherStream represents a registered watcher
+type watcherStream struct {
+	// initReq is the request that initiated this request
+	initReq watchRequest
+
+	// outc publishes watch responses to subscriber
+	outc chan WatchResponse
+	// recvc buffers watch responses before publishing
+	recvc chan *WatchResponse
+	// donec closes when the watcherStream goroutine stops.
+	donec chan struct{}
+	// closing is set to true when stream should be scheduled to shutdown.
+	closing bool
+	// id is the registered watch id on the grpc stream
+	id int64
+
+	// buf holds all events received from etcd but not yet consumed by the client
+	buf []*WatchResponse
+}
+</code></pre>
+<p>画个图整理下他们之间的关系:</p>
+<figure data-type="image" tabindex="1"><img src="http://upload-images.jianshu.io/upload_images/1244770-8d56f4f0d90de613.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="下载.png"></figure>
+<p>接下来轮到watcher是如何watch方法的了:</p>
+<pre><code class="language-go">// Watch posts a watch request to run() and waits for a new watcher channel
+func (w *watcher) Watch(ctx context.Context, key string, opts ...OpOption) WatchChan {
+	// 应用配置
+	ow := opWatch(key, opts...)
+
+	var filters []pb.WatchCreateRequest_FilterType
+	if ow.filterPut {
+		filters = append(filters, pb.WatchCreateRequest_NOPUT)
+	}
+	if ow.filterDelete {
+		filters = append(filters, pb.WatchCreateRequest_NODELETE)
+	}
+
+	// 根据传入的参数构造watch请求
+	wr := &amp;watchRequest{
+		ctx:            ctx,
+		createdNotify:  ow.createdNotify,
+		key:            string(ow.key),
+		end:            string(ow.end),
+		rev:            ow.rev,
+		progressNotify: ow.progressNotify,
+		filters:        filters,
+		prevKV:         ow.prevKV,
+		retc:           make(chan chan WatchResponse, 1),
+	}
+
+	ok := false
+	// 将请求上下文格式化为字符串
+	ctxKey := fmt.Sprintf(&quot;%v&quot;, ctx)
+
+	// find or allocate appropriate grpc watch stream
+	// 接下来配置对应的输出流, 注意得加锁
+	w.mu.Lock()
+
+	// 如果stream为空, 返回一个已经关闭的channel.
+	// 这种情况应该是防止streams为空的情况
+	if w.streams == nil {
+		// closed
+		w.mu.Unlock()
+		ch := make(chan WatchResponse)
+		close(ch)
+		return ch
+	}
+
+	// 注意这里, 前面我们提到streams是一个map,该map的key是请求上下文
+	// 如果该请求对应的流为空,则新建
+	wgs := w.streams[ctxKey]
+	if wgs == nil {
+		wgs = w.newWatcherGrpcStream(ctx)
+		w.streams[ctxKey] = wgs
+	}
+	donec := wgs.donec
+	reqc := wgs.reqc
+	w.mu.Unlock()
+
+	// couldn't create channel; return closed channel
+        // couldn't create channel; return closed channel
+	// 这里要设置为缓冲的原因可能与下面的两个
+	// closeCh &lt;- WatchResponse{closeErr: wgs.closeErr}
+	// 语句有关,这里不理解
+	closeCh := make(chan WatchResponse, 1)
+
+	// submit request
+	select {
+	// 发送上面构造好的watch请求给对应的流
+	case reqc &lt;- wr:
+		ok = true
+	// 请求断开(这里应该囊括了客户端请求断开的所有情况)
+	case &lt;-wr.ctx.Done():
+	// watch完成
+	// 这里应该是处理非正常完成的情况
+	// 注意下面的重试逻辑
+	case &lt;-donec:
+		if wgs.closeErr != nil {
+			// 如果不是空上下文导致流被丢弃的情况
+			// 则不应该重试
+			closeCh &lt;- WatchResponse{closeErr: wgs.closeErr}
+			break
+		}
+		// retry; may have dropped stream from no ctxs
+		return w.Watch(ctx, key, opts...)
+	}
+
+	// receive channel
+	// 如果是初始请求顺利发送才会执行这里
+	if ok {
+		select {
+		case ret := &lt;-wr.retc:
+			return ret
+		case &lt;-ctx.Done():
+		case &lt;-donec:
+			if wgs.closeErr != nil {
+				closeCh &lt;- WatchResponse{closeErr: wgs.closeErr}
+				break
+			}
+			// retry; may have dropped stream from no ctxs
+			return w.Watch(ctx, key, opts...)
+		}
+	}
+
+	close(closeCh)
+	return closeCh
+}
+</code></pre>
+<p>还有Watcher接口的另一个方法Close:</p>
+<pre><code class="language-go">func (w *watcher) Close() (err error) {
+	// 在锁内先将streams字段置为空
+	// 在锁外再将一个个流都关闭
+	// 这样做的意义在于不管哪个流关闭失败了
+	// 都能先保证streams与这些流的关系被切断
+	w.mu.Lock()
+	streams := w.streams
+	w.streams = nil
+	w.mu.Unlock()
+	for _, wgs := range streams {
+		if werr := wgs.Close(); werr != nil {
+			err = werr
+		}
+	}
+	// etcd竟然也只是返回一个error
+	// 虽然上面的for循环可能产生多个error
+	return err
+}
+</code></pre>
+<p>这样watcher就实现了Watcher接口.大致的实现思路本文就介绍到这里,剩下的代码也都是对其他相关数据结构的逻辑包装操作.</p>
+<p>简单阅读Etcd的这一小部分源码下来, 我看到他们源码中的两个东西,算是Golang或者编程上面的一些最佳实践:</p>
+<ol>
+<li>
+<p>对包外只暴露一个公共接口, 包内的结构体实现该接口即可.就像本文中的Watcher接口和watcher结构体.这样有两个好处, 一个就是代码能够解耦,还有就是可以省去命名的苦恼(<em><sup>__</sup></em>)</p>
+</li>
+<li>
+<p>另一个是注释的书写方式,我发现etcd源码里的注释很大一部分写在变量的定义上面,而且变量的定义名都很清晰.</p>
+</li>
+<li>
+<p>抽象得体.这个其实不只是Etcd, 其他任何优秀的开源作品都把他们的代码抽象得很到位.突然想起我写的那些渣渣代码%&gt;_&lt;%</p>
+</li>
+</ol>
+<p>最后, 总结下etcd的watch机制.其实归根结底, 它的watch是通过gRPC的多路复用实现的,这是一个基于HTTP/2的特性.所以本文可能有些偏离了主题,探讨Etcd的watch机制, 其实应该研究HTTP/2才是.</p>
+<p>算是给自己挖个坑.</p>
+<!--在看源码之前, 可以猜想下如果是自己实现的话, 会采用什么思路? 如果是我, 我会使用gRPC, 之前体验过gRPC使用的HTTP/2多路复用机制, 实现watch确实很搭. 如果不使用gRPC(HTTP/2)呢 ? 假设HTTP请求可以让我们无限阻塞,不会超时断开, 后端该如何考虑 ?-->]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[使用Openresty构建认证网关]]></title>
+        <id>https://lwhile.github.io/post/hi-openresty</id>
+        <link href="https://lwhile.github.io/post/hi-openresty">
+        </link>
+        <updated>2017-11-07T15:51:32.000Z</updated>
+        <content type="html"><![CDATA[<p>在单体应用中, 我们可以通过 cookie + session, 或者 JSON web token, 将认证逻辑在单体应用中实现, 简单高效, 还特别省事.</p>
+<p>然而这几年随着服务化潮流越来越火(我觉得这是必然趋势, 想想我们人类社会是如何运作的), 很多以前单体应用不存在的问题, 现在已成为对单体应用拆分过程中的第一个障碍, 比如系统的认证体系.</p>
+<p>如果每个拆出来的服务都要做一次认证(就是程序员多写几份认证的代码啦), 对于有理想有追求的灵魂の码农来说, 是绝对无法接受的.你说认证代码copy就好了, 不用重新写.no no no, 这样搞出来的架构不仅看着别扭, 代码闻着就觉得臭, 而且迟早有一天会出问题.</p>
+<p>解决单体应用拆分服务后的认证问题其实很常规, 回想下祖师爷们帮我们总结的一句话: &quot;Any problem in computer science can be solved by another layer of indirection.&quot; 我们可以在所有服务前面增加一层认证服务.</p>
+<figure data-type="image" tabindex="1"><img src="http://upload-images.jianshu.io/upload_images/1244770-7c58571258714b45.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Paste_Image.png"></figure>
+<p>看到认证服务这一层用来作为用户请求的总入口, 有Nginx或者Apache使用经验的同学自然而然就想到它们. 如果能把认证模块的功能整合进Nginx或者Apache这些Web服务器, 那岂不是更完美 ?</p>
+<p>而这篇文章的主角: Openresty,就可以帮助我们简单快速得完成这个想法.这是一个由<a href="https://github.com/agentzh">春哥(Github)</a>发起的项目.你可以将Openresty看做Nginx + 常用模块构成的软件包, 但是最重要的功能是我们可以使用Lua在Nginx实现Web框架才能实现的逻辑, 接下来文章将会开始介绍如何使用Openresty, 将上面提到的认证服务整合进Nginx里.</p>
+<h2 id="安装">安装</h2>
+<p>Openresty有两种安装方式, 一种是使用源码编译安装.一种使用官方提供的预编译包:<br>
+具体可参考官网的<a href="https://openresty.org/cn/linux-packages.html">安装文档</a></p>
+<h2 id="hello-world">Hello world</h2>
+<p>如果你没修改过Openresty的安装位置, 默认会被安装在/use/local/openresty目录下.我们现在可以尝试写一个Hello world级别的demo.</p>
+<p>为Openresty创建工作目录并创建配置文件:</p>
+<blockquote>
+<p>mkdir ~/openresty_work<br>
+cd ~/openresty_work<br>
+touch nginx.conf</p>
+</blockquote>
+<p>接下来在nginx.conf里面配置一个路由规则</p>
+<pre><code>worker_processes 1;
+error_log logs/error.log;
+
+events {
+	worker_connections 1024;
+}
+
+http {
+	server {
+		listen 8080;
+		location /hello {
+			default_type text/html;
+			content_by_lua_block {
+				ngx.say(&quot;Hello Openresty.&quot;)
+			}			
+		}
+	}
+}
+
+</code></pre>
+<p>跟普通的Nginx配置文件比起来, 上面的配置多了一个content_by_lua_block指令, 正是通过调用该指令, 访问该路由的时候,才会输出相应的内容.这个指令是由Openresty中的<a href="http://openresty.org/cn/lua-nginx-module.html">LuaNginxModule</a>模块提供的功能, 请求进来的时候, Nginx会启动lua的虚拟机, 输出的内容则由lua提供.</p>
+<p>我们可以使用<code>content_by_lua_file</code>指令替代<code>content_by_lua_block</code>, 将相关的lua代码写进文件里.</p>
+<pre><code>location /hello {
+			content_by_lua_file lua/hello.lua;
+		}
+
+</code></pre>
+<pre><code class="language-lua">--- hello.lua
+ngx.say(&quot;Hello Openresty.&quot;)
+</code></pre>
+<p>有了上面的铺垫,接下来可以开始构建我们的认证服务,认证的方式使用<a href="https://jwt.io/">JWT</a></p>
+<p>Openresty将一个请求的生命周期划分为4个阶段:</p>
+<figure data-type="image" tabindex="2"><img src="http://upload-images.jianshu.io/upload_images/1244770-7854b722bc3cf62c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Paste_Image.png"></figure>
+<p>我们的认证服务将会挂载在第二阶段, 即 Rewrite/Access Phase 上.</p>
+<p>接下来准备一个需要用到的库:<br>
+<a href="https://github.com/SkyLothar/lua-resty-jwt">lua-resty-jwt</a><br>
+clone下来后放到hello.lua文件所在的文件夹,并将lua_package_path配置为:</p>
+<pre><code>lua_package_path &quot;/root/openresty_work/lua/?.lua;/root/openresty_work/lua/lua-resty-jwt/lib/?.lua;;&quot;;
+</code></pre>
+<p>构建的思路也很简单, 对用户提供一个登录请求, 验证身份后将jwt token分发给用户.用户接下来访问需要认证的接口, 则在header里面加入该token, 请求进入Openresty后由lua提取出token进行认证.</p>
+<p>Nginx配置文件</p>
+<pre><code>server {
+                listen 8080;
+                location /hello {
+                        content_by_lua_file lua/hello.lua;
+                }
+                location /login {
+                        content_by_lua_file lua/sign.lua;
+                }
+                location /service1 {
+                        access_by_lua_file lua/verify.lua;
+                        # 需要反向代理在这配置
+                }
+                location /service {
+                        access_by_lua_file lua/verify.lua;
+                        # ...
+                }
+        }
+
+</code></pre>
+<p>下面是配置中相关的lua文件<br>
+sign.lua ↓:</p>
+<pre><code class="language-lua">local jwt = require 'resty.jwt'
+
+-- 只允许POST请求
+if ngx.req.get_method() ~= 'POST' then
+    ngx.status = 405
+    ngx.say(&quot;Mehtod Not Allow&quot;)
+    return
+end
+
+-- 获取请求body
+ngx.req.read_body()
+local body_raw = ngx.req.get_body_data()
+local body_json = cjson.decode(body_raw)
+local username = body_json['username']
+local password = body_json['password']
+
+if not username or not password then
+    ngx.log(ngx.ERR, username, password)
+    ngx.status = 400
+    ngx.say('无法获取账号或者密码')
+    return
+end
+
+-- 验证账号和密码是否正确,如果验证失败则做如下处理
+if not this_is_a_auth_method(username, password) then
+    ngx.status = 401
+    ngx.say('认证失败')
+    return
+end
+</code></pre>
+<p>verify.lua ↓:</p>
+<pre><code>local jwt = require 'resty.jwt'
+
+-- 从请求中提取header并从header从获取token字段
+local headers = ngx.req.get_headers()
+local token = headers['token']
+
+-- 检查token是否存在
+if not token then 
+    ngx.status = 400
+    ngx.say('无法获取token')
+    return 
+end 
+
+-- 验证token
+local jwt_obj = jwt:verify(vars.jwt_salt(), token)
+if not jwt_obj['verified'] then 
+    ngx.status = 401
+    ngx.say('无效的token')
+    return 
+end 
+</code></pre>
+<p>至此一个使用Openresty构建的认证网关的雏形已经出来了.需要说明的一句是, 上面的代码由于没有公司相关的运行环境,笔者没有经过测试和验证.所以只可阅读,不可复制后直接运行 😃</p>
+<p>如果想把这套认证网关用在生产环境上, 还有很多东西需要考虑.比如跨域问题, 静态文件的代理问题等等.</p>
+<p>个人接触Openresty的时间也不长, 文中难免会有地方写错了或者表达得很差, 欢迎发评论或者发邮件给我指正: lwhile521@gmail.com ,感谢.</p>
+<p>对于Openresty, 个人认为要对它产生兴趣,关键在于认不认可让Nginx承担除了Web服务器之外更多的业务, 对于Openresty, 它能带来的好处有:</p>
+<ol>
+<li>
+<p>极致的性能.上文没有提到Openresty的性能, 其实Openresty的编程模型和NodeJS很像, 在Openresty的世界里面,所有东西都是非阻塞的,更难得可贵的是, 它不需要使用NodeJS中的回调函数, 代码写起来其实还是同步模型, 配合C语言编写的Nginx, 最快的脚本语言lua+luajit解释器,这套方案的性能无可挑剔了.</p>
+</li>
+<li>
+<p>降低了Nginx模块的开发难度. Nginx + C/C++能做的, Openresty用lua都能做.开发效率高了, 性能还不怎么降, 何乐而不为呢?</p>
+</li>
+</ol>
+<h3 id="参考资料">参考资料</h3>
+<blockquote>
+<ol>
+<li><a href="https://www.gitbook.com/book/moonbingbing/openresty-best-practices">Openresty最佳实践</a></li>
+<li><a href="https://github.com/SkyLothar/lua-resty-jwt">lua-resty-jwt</a></li>
+</ol>
+</blockquote>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[致开发人员]]></title>
+        <id>https://lwhile.github.io/post/for-developer</id>
+        <link href="https://lwhile.github.io/post/for-developer">
+        </link>
+        <updated>2017-11-06T15:47:49.000Z</updated>
+        <content type="html"><![CDATA[<p>「软技能:代码之外的生存指南」在开头部分有几句话,我看了之后觉得很棒,于是摘抄下来激励自己.</p>
+<blockquote>
+<p>谨以本书献给所有自强不息,孜孜不倦地持续自我改进的开发人员,他们具备以下素质:<br>
+永远不会对&quot;不错&quot;感到心满意足<br>
+永远寻求每一个机会来扩展自己的视野, 探索未知事物<br>
+对知识的渴求永远不会熄灭<br>
+笃信软件开发并不仅仅意味着编写代码<br>
+知道失败不是结束,失败只是人生旅途上的小小一步<br>
+有过挣扎,有过失败,但仍然会爬起来继续战斗<br>
+拥有强烈意愿和决心,在人生的道路上不畏艰难<br>
+以及最重要的,愿意一路上帮助他人</p>
+</blockquote>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[日志切分问题有感]]></title>
+        <id>https://lwhile.github.io/post/ri-zhi-qie-fen-wen-ti-you-gan</id>
+        <link href="https://lwhile.github.io/post/ri-zhi-qie-fen-wen-ti-you-gan">
+        </link>
+        <updated>2017-11-05T15:46:56.000Z</updated>
+        <content type="html"><![CDATA[<p>有过服务端开发经验的同学应该对日志这个东西不陌生, 把程序丢到服务器上跑, 日志就是我们了解运行情况,甚至解BUG的唯一入口了.</p>
+<p>有些程序的日志量会增长得非常快, 比如Nginx, 当一个日志文件大到几百MB甚至上GB的时候, 要从这个文件找出我们要的信息就基本等于大海捞针了,所以这时候对日志进行管理就显得格外重要.</p>
+<p>日志量大的平台可以上ELK,利用ES的搜索优势基本不担心日志数据量大的问题.但本文不打算涉及这方面的内容.接下来主要讲讲如何正确得对日志文件做切分.</p>
+<p>Linxu上的日志切分有两种形式, 一种是使用Linux的logrotate工具, 另外一种是使用额外编写的脚本, 这种形式一般是和日志库配合使用.</p>
+<p>因为业务的关系, 我们最开始抛弃了使用logrotate的方案, 因为我们觉得这会给实施人员增加系统的的维护负担(后来发现是我们对logrotate不够了解).于是我们使用第二种方案, 将日志的切分操作在我们的日志库里面实现, 我们封装了logrus和lfshook, 利用logrus的hook机制将切分的逻辑嵌入在日志库里面,代码调用的时候会自动触发切分操作.我们会这样做也是受到beego框架的影响, 它的日志库默认就带了切分功能.</p>
+<p>一切运作得很顺利, 直到我们有一次在使用Openresty的时候, 发现Nginx的日志没有被切分.因为之前使用Nginx的时候,默认安装完毕后日志是会自动以天切分的, 于是我们开始找Nginx的配置项,看看是否漏掉了某些配置.但是不找没关系,了解后才发现Nginx是不提供日志切分功能的.What ? 那之前的切分功能是怎么来的?</p>
+<p>接下来解决问题的过程中发现了在/etc/logrotate.d/下有nginx的配置, 同时还有Mysql和其他基础组件的,这时我们才想到有可能是RPM包(我们的系统是Centos)安装的时候自动生成了一个logrotate的配置文件,后来一查果然是(命令:rpm -qpl xxx.rpm).而我们的Openresty包没有生成这个配置文件,所以导致Nginx的日志文件没有被切分.</p>
+<p>实际上很多软件都只会做日志的记录,不会帮忙做切分,这个确实是合理的.这让我们想起logrus为什么不提供日志切分的功能,而是得由第三方的库去完成.我们将日志切分的逻辑耦合进代码里面,现在回过头来看其实也不是很合理,正确的做法其实还是应该在打RPM包的时候, 生成一个logrotate的配置文件, 这样一来也不会增加实施人员的负担,而且也可以将切分功能统一到一个地方去做.</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[InfluxDB与Prometheus用于监控系统上的对比]]></title>
+        <id>https://lwhile.github.io/post/influxdb-vs-prometheus</id>
+        <link href="https://lwhile.github.io/post/influxdb-vs-prometheus">
+        </link>
+        <updated>2017-07-19T16:39:15.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="总览">总览</h2>
+<p>首先要明白, Prometheus 提供的是一整套监控体系, 包括数据的采集,数据存储,报警, 甚至是绘图(只不过很烂,官方也推荐使用 grafana).<br>
+而 InfluxDB 只是一个时序数据库, 使用它做监控系统的话, 还需要物色数据采集器,如 telegraf, collectd 等. 甚至连报警模块, 也需要使用同为 Influxdata 公司出的 Kapacitor.从这个角度来说, Prometheus 会有运维上的优势, 因为它用起来确实很省事.</p>
+<h2 id="数据的采集">数据的采集</h2>
+<p>Prometheus 和 InfluxDB 在数据的采集上两者就选择了不同的极端, 前者只能 pull, 后者只能 push, 关于 pull 和 push 的对比,这里暂不多述.</p>
+<p>Prometheus 把 数据的采集器叫做 exporter, xxx-exporter 运行之后会在机器上占用一个端口, 等待 Prometheus server 拉取数据.</p>
+<p>InfluxDB 的数据采集器我们使用了 telegraf, 官方宣传插件化驱动, 其实也就那么回事, 编译的时候把很多东西的采集功能包进去压在一个二进制里面, 再用配置文件控制插件是否开启. 功能其实是蛮强大了. 也是 Go 编写, 部署算不上困难, 但用起来总会觉得多了一点什么东西.</p>
+<p>存在感.</p>
+<p>没错, 多了一种存在感, 对于数据采集 agent 这种东西, 存在感越低越好.</p>
+<p>Telegraf 的默认配置文件就多达2000多行, 里面包括 push 的目的地址, 各种插件的控制目等等.相比之下, Prometheus 的 exporter  不需要任何配置文件, 不需要任何依赖, 真正的开箱即用.</p>
+<p>但 Telgraf 有一个很吸引人的功能, 就是它能够作为一个转发代理接受来自不同程序的消息</p>
+<p>比如可以运行一段脚本, 将结果按照一定的格式输出给 telegraf 默认的8186端口, telegraf 再写进 InfluxDB, 这样就把一个特殊的第三方业务的数据采集起来了, 不需要重启 Telegraf, 也不需要重启 InfluxDB.</p>
+<p>如果换用 Prometheus 要怎么做呢? 我们需要引入 prometheus 的 SDK 自己编写 exporter, 而且 prometheus 会有四种指标类型,编写完之后需要去 Prometheus server 重新配置要抓取的目标, 整个下来是比 Telegraf 那一套要麻烦的.</p>
+<p>如果你的需求很特殊, 要监控的很多第三方特殊的指标, 而对于常见的资源如硬件,数据库等监控需求不大, 那么 Telegraf + InfluxDB 会是一个不错的组合.</p>
+<h3 id="数据的存储">数据的存储</h3>
+<p>单单比较数据存储的那一部分, 它们两者之间也有很多不同.</p>
+<p>InfluxDB 的存储引擎是基于一种叫做TSM的自研引擎, Prometheus 则是柔和了 leveldb 与 自研的存储引擎.</p>
+<p>总的趋势都是基于时序数据进行优化, 不仅要照顾读写性能, 还要照顾删除性能与稳定性.</p>
+<p>不过不管怎样,性能与数据的压缩对于使用者来说都不是第一要考虑的因素, 不是不重要,而是因为他们两者都做得很棒, 对于一个监控系统来说.</p>
+<p>在使用的灵活性方面, InfluxDB 是优于 Prometheus 的,这是由于他们的产品定位决定的: InfluxDB 是一个时序数据库, Prometheus 是一个附带数据库的监控系统.举个例子, InfluxDB 有类似 Mysql 中数据库, 表的概念, 而且可以针对每个数据库设置不同的存储策略, 不得不说这些功能对于一个专门存放数据的软件系统来说还是很有吸引力的.</p>
+<h3 id="数据的查询">数据的查询</h3>
+<p>在数据查询上面, InfluxDB 的查询语言 InfluxQL 与 SQL 类似, 但是不能像 SQL 那样做强大的表与表之间的操作.</p>
+<p>Prometheus 的查询语言也很有特点, 看起来会像 JSON , 但是通过它也可以实现各种强大的查询操作.</p>
+<p>下面分别是 InfluxDB 和 Prometheus 查询1分钟内 CPU 使用率的语句</p>
+<pre><code>SELECT 100 - usage_idel FROM &quot;autogen&quot;.&quot;cpu&quot; WHERE time &gt; now() - 1m and &quot;cpu&quot;='cpu0'
+</code></pre>
+<pre><code>100 - (node_cpu{job=&quot;node&quot;,mode=&quot;idle&quot;}[1m]) 
+</code></pre>
+<p>如果硬要在查询语言上分个高低的话,我会选择 Prometheus, 原因很简单, 我觉得它更有友好与简单</p>
+<h3 id="高可用与集群功能">高可用与集群功能</h3>
+<p>最后还要说一下集群和高可用性这块.很遗憾他们两个现在都做得不是很好,至少从免费的角度来说:)</p>
+<p>InfluxDB 的集群功能是商业功能, 但是有一个高可用的套件叫做 Influxdb-relay, 这个一个跑在 InfluxDB 实例前面的一个转发代理, 数据经过它的时候会被分发到各个数据库实例上. 还凑合着能用吧,不过不支持 query 操作, 如果有需要的话可以参考这个fork https://github.com/shanexu/influxdb-relay</p>
+<p>Prometheus 到目前为止还没有看到集群功能的消息, 高可用也是仅仅通过部署多个实例来实现, 这个方案是有局限性的, 就算不考虑资源的占用, 也会让系统的架构变得复杂.</p>
+<p>笔者一直都在等待他们能一个高可用和集群部署的功能, 尤其是 Prometheus.因为毕竟总有公司需要数据有可靠性的保证的, 尤其是面向政企客户的公司.</p>
+<p>有一段时间笔者学了 Raft 协议的后想要自己实现 InfluxDB 的集群功能, 但总是怕自己做不好, 花的时间打了水漂, 毕竟对于笔者这样的新手来选择把精力花在打实计算机基础以及扩充自己的知识面上面会更有性价比. 但是如果有哪位读者也有实现 InfluxDB 集群功能的想法, 请告诉我, 我很愿意一起协助...</p>
+<h3 id="报警">报警</h3>
+<p>如果说在前面那两个方面 InfluxDB 和 Prometheus 还各有特点的话, 那么在报警这方面 InfluxDB 简直就是被 Prometheus 按在地上摩擦.</p>
+<p>InfluxDB 官方出了一个叫做 Kapacitor 的软件, 官方说可以用它实现报警.<br>
+但是这货明明是拿来对 InfluxDB 做数据处理的, 用在监控系统的报警功能上面真的很差.</p>
+<p>一方面是因为效率的原因, 它的工作原理是定时得去从 InfluxDB 取数据出来进行运算来检查是否触发报警条件, 而且万一数据库挂了的话岂不是报警也失效了 ? 一方面是它的 DSL 使用起来体验真心差, 谁用谁知道 !</p>
+<h3 id="总结">总结</h3>
+<p>几个月体验下来, 笔者认为对于监控系统的选择来说, Prometheus 是不二之选,市场的反应也摆在我们面前了, 这就是趋势.</p>
+<p>另外一方面, 如果你的业务不单单是监控系统, 还需要使用到一些时序数据库的特性用来存储其他数据, 那么也别纠结了, InfluxDB就是最适合的.</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[InfluxDB TCP 连接数过多问题]]></title>
+        <id>https://lwhile.github.io/post/influxdb-tcp-problem</id>
+        <link href="https://lwhile.github.io/post/influxdb-tcp-problem">
+        </link>
+        <updated>2017-07-16T16:41:10.000Z</updated>
+        <content type="html"><![CDATA[<p>公司使用了 InfluxDB 作为监控系统的存储后端, 在一次上线后,发现与InfluxDB 使用的 8086 端口相关的 TCP 连接数竟然多大 6K+ ,有时候甚至会逼近 1w ,这个数量对于一个只是在内部使用的监控系统来说, 无论如何都是无法接受的, 于是开始一系列的排查过程. 本文记录了这个问题的主要解决过程,算是对这一次杀 bug 过程的一个总结.</p>
+<h3 id="问题描述">问题描述</h3>
+<p>因为业务的需要, client 对 InfluxDB 做 query 时,  会经过 server 的一个 proxy , 再由 proxy 发起到 Influxdb 的 query (http) 请求. 在我们的部署架构中, proxy 与 InfluxDB 是部署在同一个 server 上的. 使用命令</p>
+<blockquote>
+<p>netstat -apn | grep 8086</p>
+</blockquote>
+<p>可以看到大量处于 TIME_WAIT状态的 tcp 连接</p>
+<pre><code>...
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:58874         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:59454         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:59084         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:59023         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:59602         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:59027         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:59383         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:59053         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:58828         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:58741         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:59229         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:58985         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:59289         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:59192         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:59161         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:59292         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:59242         TIME_WAIT   -               
+tcp6       0      0 127.0.0.1:8086          127.0.0.1:59430         TIME_WAIT   -   
+...    
+</code></pre>
+<p>使用命令</p>
+<blockquote>
+<p>netstat -apn | grep 8086 | grep TIME_WAIT | wc -l</p>
+</blockquote>
+<p>进行计数, 会发现连接数会不断增加,  经过多次测试, 在公司环境中连接数至少都会达到 6k+. 这个问题必须要解决, 一方面是因为每条 tcp 连接都会占用内存, 另一方面系统的动态端口数也是有限的.</p>
+<p>很明显这些连接几乎都处在 TIME_WAIT 状态,所以在继续往下走之前, 需要了解下 TIME_WAIT 这个关键字</p>
+<h3 id="time_wait">TIME_WAIT</h3>
+<p>我们知道 一条 tcp 连接从开始到结束会经历多个状态, 换句话说, 可以把 一条 tcp 连接看成是一个 状态机. 这个状态图如下:</p>
+<figure data-type="image" tabindex="1"><img src="http://upload-images.jianshu.io/upload_images/1244770-9004bb53e461a54f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Paste_Image.png"></figure>
+<p>可以看到, 凡是主动进行关闭 tcp 连接的一方, 都会经过 TIME_WAIT 这个状态.接下来再经过 2MSL 的时间后内核再完全释放相应的文件描述符和端口. (顺便提一下, MSL 是最大分段寿命, 是一个 TCP 分段可以存在于互联网系统中的最大时间, 在 Linux 下可以用命令</p>
+<blockquote>
+<p>cat /proc/sys/net/ipv4/tcp_fin_timeout</p>
+</blockquote>
+<p>查看 MSL的数值)</p>
+<p>到这个地方可以推断出, 是 8086 端口(即 InfluxDB) 主动关闭了 tcp 连接, 导致挤压了大量的处于 TIME_WAIT 状态下的连接在等待内核释放. 于是自然而然得会想到, 能不能限制 InfluxDB 能打开的最大连接数, 让它尽可能复用每一条 tcp 连接?</p>
+<p>果不其然, 在 InfluxDB 的配置文件中, 有这么一个配置项</p>
+<pre><code># The maximum number of HTTP connections that may be open at once. connections that                                                  
+# would exceed this limit are dropped.  Setting this value to 0 disables the limit.
+max-connection-limit = 0 
+</code></pre>
+<p>我将其该为100, 然后重启数据库.</p>
+<p>然而并没有什么卵用, 看来还是得继续想办法.</p>
+<h3 id="查看-influxdb-源码">查看 InfluxDB 源码</h3>
+<p>接下来使用 curl 查看 Influxdb 返回的 http header</p>
+<pre><code>HTTP/1.1 200 OK
+Connection: close
+Content-Type: application/json
+Request-Id: 95e5b54b-6af3-11e7-8001-000000000000
+X-Influxdb-Build: OSS
+X-Influxdb-Version: 1.3.0rc1
+Date: Mon, 17 Jul 2017 13:26:48 GMT
+Transfer-Encoding: chunked
+</code></pre>
+<p>可以看到 Connection 字段被设置为 close .<br>
+因为已经确定我们用 Go 编写的用于对 InfluxDB 发起 http 请求的 proxy 已经正确复用了 tcp 连接 , 所以就感觉问题应该是处在了 InfluxDB 上, 所以接下来就开始翻开 InfluxDB 的源码查看究竟.</p>
+<p>文章中提到的 InfluxDB 版本为 1.2 , 处理 query 请求的代码在services/httpd/handler.go 中, 函数签名为</p>
+<pre><code>func (h *Handler) serveQuery(w http.ResponseWriter, r *http.Request, user meta.User)
+</code></pre>
+<p>在其中发现一句代码</p>
+<pre><code>rw.Header().Add(&quot;Connection&quot;, &quot;close&quot;)
+</code></pre>
+<p>看到这里感觉一切豁然开朗了,  确实是 Influxdb 主动关闭的连接, 并且通知 client (也就是文中提到的 proxy )  在请求完成后也关闭连接.</p>
+<p>为了验证这一点, 我将上面那句代码注释掉后重新编译 InfluxDB, 在 client 正确复用连接的情况下, 连接数确实可以保持在 10 以内.</p>
+<p>现在问题就变成, InfluxDB 为何要这样设计 ?</p>
+<figure data-type="image" tabindex="2"><img src="http://upload-images.jianshu.io/upload_images/1244770-84381fb6141d1eb4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Paste_Image.png"></figure>
+<h3 id="后续">后续</h3>
+<p>在 Github 的一个 <a href="https://github.com/influxdata/influxdb/issues/8525">issue</a> 上, 我向 InfluxDB 的官方反映了这个问题, 官方也注意到了, 可能在接下来的 1.3 版本会修复这个问题, 拭目以待.</p>
+<p>--------- 更新 ------<br>
+Influxdb 之所以会强制关闭连接, 是因为 Go 对复用的连接使用</p>
+<pre><code>ResponseWriter.CloseNotify()
+</code></pre>
+<p>获取通知的时候会有问题, 于是他们强制 client 在后续请求中重新建立连接而不是选择复用.不过 InfluxDB 对连接的关闭通知做了一些另外的处理, 所以上面的那句代码可以去掉.</p>
 ]]></content>
     </entry>
 </feed>
