@@ -1,0 +1,265 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>
+    使用 R 模拟金融市场的布朗运动 | 神蛋杂谈
+</title>
+<link rel="shortcut icon" href="https://lwhile.github.io/favicon.ico?v=1576341339502">
+<!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
+<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://lwhile.github.io/styles/main.css">
+<!-- js -->
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://lwhile.github.io/media/js/jquery.sticky-sidebar.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+
+        
+</head>
+
+<body>
+    <div class="main">
+        <div class="header">
+    <div class="nav">
+        <div class="logo">
+            <a href="https://lwhile.github.io">
+                <img class="avatar" src="https://lwhile.github.io/images/avatar.png?v=1576341339502" alt="">
+            </a>
+            <div class="site-title">
+                <h1>
+                    神蛋杂谈
+                </h1>
+            </div>
+        </div>
+        <span class="menu-btn fa fa-align-justify"></span>
+        <div class="menu-container">
+            <ul>
+                
+                    
+                            <li>
+                                <a href="/" class="menu">
+                                    首页
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/archives" class="menu">
+                                    归档
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/tags" class="menu">
+                                    标签
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/post/about" class="menu">
+                                    关于
+                                </a>
+                            </li>
+                            
+                                
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $(".menu-btn").click(function() {
+            $(".menu-container").slideToggle();
+        });
+        $(window).resize(function() {
+
+            if (window.matchMedia('(min-width: 960px)').matches) {
+                $(".menu-container").css('display', 'block')
+            } else {
+                $(".menu-container").css('display', 'none')
+            }
+
+        });
+    });
+</script>
+
+            <div id="main-content" class="post-detail main-container">
+                <!-- left -->
+                <div id="content" class="main-container-left">
+                    <article class="post i-card">
+                        <h2 class="post-title">
+                            使用 R 模拟金融市场的布朗运动
+                        </h2>
+                        <div class="post-info">
+                            <time class="post-time">2019-07-21</time>
+                            
+                                <a href="https://lwhile.github.io/tag/qi-quan" class="post-tag i-tag
+                            i-tag-success">
+                            #期权
+                        </a>
+                                
+                                <a href="https://lwhile.github.io/tag/jin-rong-jing-ji" class="post-tag i-tag
+                            i-tag-other_3">
+                            #金融经济
+                        </a>
+                                
+                        </div>
+                        
+                                <div class="post-content">
+                                    <p>布朗运动的发现源于19 世纪的植物学家罗伯特 • 布朗，他发现在显微镜中观察花粉微粒在水中的运动是无规则的；到了 20 世纪初期，爱因斯坦才详细解释了布朗运动：花粉微粒的无规则运动是水分子撞击形成的。在金融领域，布朗运动运动背后代表的随机过程被大量运用在 BSM 期权定价公式上，这也是我写这样一篇文章的原因。</p>
+<p>在市场中的一些人看来，市场的波动完全是随机的。这其中最出名的就是纳西姆·尼古拉斯·塔勒布，你可能没听说这个名字，但是你应该知道这几本书，《黑天鹅》，《随机致富的傻瓜》。他们都出自塔勒布之手。</p>
+<p>标准布朗运动 { B(t): t &gt; 0 } 的定义为：</p>
+<ol>
+<li>B(0) = 0；</li>
+<li>对于所有的 0 &lt; s &lt; t，变化量 B(sn) - B(sn-1) 之间的值是相互独立的；</li>
+<li>对于所有的 0 &lt; s &lt; t，变化量 B(sn) - B(sn-1) 符合均值为 0，方差为 (t - s) 的正态分布；</li>
+</ol>
+<p>同时布朗运动也是一个马尔可夫过程，意味着 t+1 时刻的取值仅和 t 时刻有关，与 t-1 以及之前任何时刻的值无关，即 t 时刻以及包含了判断接下来走势需要的所有信息。用大白话说就是，明天某只股票的价格要怎么走，只和今天市场的表现有关，和今天之前的任一一天都无关。</p>
+<figure data-type="image" tabindex="1"><img src="https://upload-images.jianshu.io/upload_images/1244770-a494da59da29686b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=" 布朗运动模拟出来的走势图是不是和股市走势很像？"></figure>
+<p>布朗运动模拟出来的走势图是不是和股市走势很像？</p>
+<h2 id="连续还是离散">连续还是离散？</h2>
+<p>随机过程可以分为四类：</p>
+<ul>
+<li>离散时间 + 离散空间</li>
+<li>离散空间 + 连续时间</li>
+<li>连续时间 + 离散空间</li>
+<li>连续时间 + 连续空间</li>
+</ul>
+<p>标准的布朗运动是连续时间+连续空间，但是在金融市场，即便是交易时间最长（周一至周五 24 小时在全球各个时区不停交易）的货币市场，也会存在周末两天的时间缺口。对于价格，也会有跳空情况的存在。因此现实世界的产生的数据序列肯定是时间与空间都离散，这点要和理想模型区分开。</p>
+<h2 id="使用-r-语言模拟布朗运动">使用 R 语言模拟布朗运动</h2>
+<p>这篇文章之所以使用 R 语言做代码载体，是因为我最近在看金融统计学的资料时发现 R 语言出现的频率不是一般得高，几乎总是和 Python 一起出现。由于我对 Python 已经比较熟悉，所以就选个不熟悉语言玩玩。</p>
+<p>R 环境的安装很简单，Mac、Linux、Windows 都有各自的安装包，开箱即用，推荐清华的镜像源 <a href="https://mirrors.tuna.tsinghua.edu.cn/CRAN/"></a><a href="https://mirrors.tuna.tsinghua.edu.cn/CRAN/">https://mirrors.tuna.tsinghua.edu.cn/CRAN/</a></p>
+<p>安装后进入 REPL ，REPL 对于这次的代码量来说足够使用了。</p>
+<p>第一步，先准备数据序列。这里需要一堆随机数，这些随机数要满足布朗运动的定义。在 R 里面，生成满足这样要求的数据可以使用函数</p>
+<p><code>rnorm(n, mean, var)</code></p>
+<p>参数 n 表示要生成的随机数个数，mean 表示均值，var 表示方差。</p>
+<p>因此生成 10 个可以代表布朗运动的代码为：</p>
+<pre><code>rnorm(10, 0，1)
+// [1] -0.28180192  0.07735837 -1.25260216 -0.64893090  0.97454564  1.30477018  0.89177639 -0.47591015  2.02248821 -2.34884907
+
+</code></pre>
+<p>我们把随机数的数量加大，直接调至 1000 个，并用变量 <code>dis</code> 存下来：</p>
+<pre><code>dis = rnorm(1000, 0, 1)
+
+</code></pre>
+<p>接下来把这 1000 个数据可视化展示出来。对于 R 来说，不需要安装额外的第三方包，直接运行 <code>plot</code> 即可（这点倒是比 python 强......）</p>
+<pre><code> plot(dis, type=&quot;l&quot;, main=&quot;brownian_montion&quot;, xlab=&quot;time&quot;, ylab=&quot;price&quot;)
+
+</code></pre>
+<p>得到的结果为：</p>
+<figure data-type="image" tabindex="2"><img src="https://upload-images.jianshu.io/upload_images/1244770-23a232c176bd3de3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></figure>
+<p>翻车了，不是说可以用模拟股价的运行吗？哪个产品会的价格会走成这副鬼样啊！</p>
+<p>这种现象其实也是我亲自动手去模拟之后才发现的。在这里，要让生成的数据看起来像真正的股价走势图，只需要对生成的数据最一个小小的操作即可：</p>
+<pre><code>dis = cumsum(dis)
+
+</code></pre>
+<p>这句代码使用 <code>cumsum</code> 函数把 dis 序列的每个元素做了累积求和的运算，下面是它的可视化结果：</p>
+<figure data-type="image" tabindex="3"><img src="https://upload-images.jianshu.io/upload_images/1244770-7ddb4308a9ca07a2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></figure>
+<p>很像真正的股价走势对吧？在高位快速下跌，中间经历一波小反弹，被套的人发现无力创新高后又继续抛售，说得我自己都信了，然而这真的是用随机数据生产的一幅图。</p>
+<p>其实看到这幅图的时候我立马想起 2015 年的 A 股，我把图调出来让读者感受下中间的奇妙。</p>
+<figure data-type="image" tabindex="4"><img src="https://upload-images.jianshu.io/upload_images/1244770-bb9937de5a6112a2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></figure>
+<p>https://mp.weixin.qq.com/s/WxYqY4DWoMP6Bo2GeKE8Iw</p>
+
+                                </div>
+                    </article>
+                    <!--  -->
+                    
+                        <div class="next-post">
+                            <div class="next">下一篇</div>
+                            <a href="https://lwhile.github.io/post/future-value-defination">
+                                <h3 class="post-title">
+                                    《Option Volatility &amp; Pricing》 学习笔记：远期价格的定价
+                                </h3>
+                            </a>
+                        </div>
+                        
+                            <div id="disqus_thread"></div>
+                            <div id="gitalk-container"></div>
+                </div>
+                <!-- middle -->
+                <div class="main-container-middle"></div>
+                <!-- right -->
+                <div id="sidebar" class="main-container-right">
+                    
+                        <!-- toc -->
+                        
+    <div class="toc-card i-card ">
+        <div class="toc-title i-card-title">目录</div>
+        <div class="toc-content">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E8%BF%9E%E7%BB%AD%E8%BF%98%E6%98%AF%E7%A6%BB%E6%95%A3">连续还是离散？</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8-r-%E8%AF%AD%E8%A8%80%E6%A8%A1%E6%8B%9F%E5%B8%83%E6%9C%97%E8%BF%90%E5%8A%A8">使用 R 语言模拟布朗运动</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+        <script>
+            function locateCatelogList() {
+                /*获取文章目录集合,可通过:header过滤器*/
+                var alis = $('.post-content :header');
+                /*获取侧边栏目录列表集合**/
+                var sidebar_alis = $('.markdownIt-TOC a');
+                /*获取滚动条到顶部的距离*/
+                var scroll_height = $(window).scrollTop();
+                for (var i = 0; i < alis.length; i++) {
+                    /*获取锚点集合中的元素分别到顶点的距离*/
+                    var a_height = $(alis[i]).offset().top;
+                    if (a_height < scroll_height) {
+                        /*高亮显示*/
+                        sidebar_alis.removeClass('on');
+                        $(sidebar_alis[i]).addClass('on');
+                    }
+                }
+            }
+            $(function() {
+                /*绑定滚动事件 */
+                $(window).bind('scroll', locateCatelogList);
+            });
+        </script>
+    </div>
+    
+                            
+
+                </div>
+
+
+
+
+            </div>
+
+
+            <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://lwhile.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+    <script>
+        $('#sidebar').stickySidebar({
+            topSpacing: 80,
+            // bottomSpacing: 60
+        });
+    </script>
+    
+</body>
+
+</html>

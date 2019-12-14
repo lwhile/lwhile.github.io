@@ -5,7 +5,7 @@
 <meta name="description" content="" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>
-    使用 override 解决 dep 中的依赖冲突 | 神蛋杂谈
+    期权系列：二叉树定价模型 | 神蛋杂谈
 </title>
 <link rel="shortcut icon" href="https://lwhile.github.io/favicon.ico?v=1576341339502">
 <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
@@ -99,58 +99,89 @@
                 <div id="content" class="main-container-left">
                     <article class="post i-card">
                         <h2 class="post-title">
-                            使用 override 解决 dep 中的依赖冲突
+                            期权系列：二叉树定价模型
                         </h2>
                         <div class="post-info">
-                            <time class="post-time">2018-05-02</time>
+                            <time class="post-time">2019-06-04</time>
                             
-                                <a href="https://lwhile.github.io/tag/5UKnY2CH9d" class="post-tag i-tag
-                            i-tag-primary">
-                            #Go
+                                <a href="https://lwhile.github.io/tag/qi-quan" class="post-tag i-tag
+                            i-tag-warning">
+                            #期权
+                        </a>
+                                
+                                <a href="https://lwhile.github.io/tag/jin-rong-jing-ji" class="post-tag i-tag
+                            i-tag-error">
+                            #金融经济
                         </a>
                                 
                         </div>
                         
                                 <div class="post-content">
-                                    <p>公司的 Go 项目使用 dep 做为依赖管理的工具，在使用的过程中，因为项目依赖比较复杂，经常会遇到依赖冲突导致 <code>dep ensure</code> 命令无法执行成功。</p>
-<p>比如，正在开发中的项目A依赖了B和C，而 B 项目也依赖了 C 项目。</p>
-<figure data-type="image" tabindex="1"><img src="https://upload-images.jianshu.io/upload_images/1244770-695fd170b2fe9ee4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="依赖关系.png"></figure>
-<p>A 项目的 Gopkg.toml</p>
-<pre><code class="language-toml">[[constraint]]
-  branch = &quot;master&quot;
-  name = &quot;B&quot;
+                                    <p>最近为了更加深入得学习期权，我把忘了个底朝天的数学重新拿了起来。从高中数学开始，我会一直复习到微积分，一直到我搞懂 BSM 公式中的每一个步骤，以及他们衍生出来的数学知识。套用马克思的话，有百分之五十的利润，人类就会铤而走险；为了百分之一百的利润，人类就敢践踏一切人间法律。而对于 20 多岁的我来说，期权里面包含的无限可能，就能让我无视掉智商被碾压的羞辱感。</p>
+<p>废话不多说，下面是推导的步骤（没接触过期权的同学基本可以不用看）</p>
+<p>假设某股票 XYZ，其价格目前为 20 元，并且通过一些条件知道，这个股票在三个月将会变为 22 元，或者 18 元。接下来要做的，就是为三个月后，行权价为 21 的 Call Option 定价。由于 Call Option 的性质，当 XYZ 在三个月达到 22 元时，期权的价格为 1 元；若三个月后降为 18，则该 Call Option 作废，价值为 0。</p>
+<p>二叉树模型比较简单的地方在于，不像 BSM 模型，我们只需要引入一个假设条件就可以继续往下推算，即「市场没有套利的机会」，因此如果使用股票和 Call Option 的空头来构造一个无风险头寸，则可以得到：</p>
+<pre><code>22∂ - 1 = 18∂
+</code></pre>
+<p>解得 ∂=0.25，即在这个头寸中，我们需要买入 0.25 股 XYZ（什么，股票还可以买小数股？没错，还真可以！我们公司就提供了美股碎股交易的 API，需要请联系我），不管三个月后 XYZ 价格是 22 还是 18，只要在这个区间内，这个头寸（0.25 股 XYZ 以及一份看涨期权的空头）的收益都会是 22 * 0.25 - 1 = 4.5</p>
+<p>由于该头寸是风险的，所以三个月后 4.5 的收益，就是无风险收益。假设市场的无风险收益是年化 12%，根据复合增长率的公式，假设该头寸当前价值为 µ，则</p>
+<pre><code>µ * ℮^(0.12*3/12) = 4.5
+</code></pre>
+<p>解得 µ ~= 4.3670，把它代入下面这个方程：</p>
+<pre><code>20 * ∂ - c = µ
+</code></pre>
+<p>∂, µ 这两个变量现在是已知的，因此我们可以知道期权的价格 c 为</p>
+<pre><code>20 * ∂ - µ = 20 * 0.25 - 4.3670 = 0.633
+</code></pre>
+<p>没了，整个推导过程就是这样，在该模型下，这个三个月后到期，XYZ 执行价格为 21 的购期权价格就是 0.633，是不是很简单？</p>
+<p>后面还有这个过程的通用化公式以及其他扩展，下次继续，最近几天肯定更。</p>
+<h2 id="推广">推广</h2>
+<p>基于上面的推导过程，可以将整个过程通用化。</p>
+<p>假设当前 XYZ 的价格为 Sn，其某个期限为 T 的期权的价格为 Fn。在该时间内，XYZ 的价格可能会涨到 Su，期权的价格为 Fu，或者跌倒 Sd，期权的价格为 Fd。</p>
+<p>接下来开始构造我们的无风险收益仓位：</p>
+<p>同样是 ∂ 单位的股票多头，以及一份 Call Option 的空头，若接下来股票上涨，则整个头寸的价值为：</p>
+<pre><code>Su∂ - Fu
+</code></pre>
+<p>若 XZY 下跌，则头寸的价值为：</p>
+<pre><code>Sd∂ - Fd
+</code></pre>
+<p>由于该头寸无风险，故：</p>
+<pre><code>Su∂ - Fu = Snd∂ - Fd
+</code></pre>
+<p>解得：</p>
+<pre><code>∂ = (Fu - Fd)/(Su - Sd)
+</code></pre>
+<p>∂ 在这里即是 XYZ 多头的单位，也可以表示期权的价格变化与股票价格变化的比率。</p>
+<p>由于无风险，我们可以求得若 T 时间后股票价格为 Su，则整个头寸的当前价值为：</p>
+<pre><code>V = (Su∂ - Fu)/e^(rT)
+</code></pre>
+<p>因此可以得到：</p>
+<pre><code>V = Sn∂ - F = (Su∂ - Fu)/e^(rT)
+</code></pre>
+<p>解得：</p>
+<pre><code>F = ∂(1 - Su℮^-rT) + Fu℮^-rT
+</code></pre>
+<p>把 ∂ 代入得：</p>
+<pre><code>F = Sn∂ - (Su∂ - Fu)/e^(rT)
+  = ∂[Sn - Su/e^(rT)] + Fu/e^(rT)
 
-[[constraint]]
-  branch = &quot;master&quot;
-  name = &quot;C&quot;
+∂ = (Fu - Fd)/(Su - Sd)
 </code></pre>
-<p>B 项目的 Gopkg.toml</p>
-<pre><code>[[constraint]]
-  branch = &quot;master&quot;
-  name = &quot;C&quot;
+<p>👆 这公式即为二叉树模型下期权价格的计算公式，我们把最上面的数字代进去：</p>
+<pre><code>Sn = 20
+Su = 22
+Sd = 18
+Fu = 1
+Fd = 0
+r = 0.12
+T = 0.25
+∂ = 0.25
 </code></pre>
-<p>接下来 A 项目因为开发的需要在 C 项目中新开了分支。在该分支合并进 master 分支之前，需要在 A 项目的 <code>Gopkg.toml</code>中指定分支名称。</p>
-<pre><code>[[constraint]]
-  branch = &quot;master&quot;
-  name = &quot;B&quot;
-
-[[constraint]]
-  branch = &quot;new_branch&quot;
-  name = &quot;C&quot;
+<p>得到 F = 0.633，和最开始的例子一样</p>
+<pre><code>F = 0.25(20-22/e^(0.12*0.25)) + 1/e^(0.12*0.25) = 0.633
 </code></pre>
-<p>这时候再执行   <code>dep ensure</code> 是无法成功的，会提示依赖发生了冲突。</p>
-<p>解决冲突的方法也很简单，在A项目的 <code>Gopkg.toml</code>中将C项目的<code>constraint</code>改为 <code>override</code> 就可以了。等到C项目的修改合并进 master 分支时，再将 constraint 改回来。</p>
-<pre><code>[[constraint]]
-  branch = &quot;master&quot;
-  name = &quot;B&quot;
-
-[[override]]
-  branch = &quot;new_branch&quot;
-  name = &quot;C&quot;
-</code></pre>
-<h2 id="constraint-与-override-的区别">constraint 与 override 的区别</h2>
-<p>dep 会如实得处理 constraint 类型的依赖，在这个例子中，尽管在 A 的依赖中将 C 的分支设置为 new_branch，但是在B项目中，引用的包还是依旧使用 master 分支 的代码。</p>
-<p>如果将A项目的 constraint 改为 override , 则会强制让 B 项目在拉取 C 项目的代码时，拉取的是 new_branch 分支上的代码，避免因为协同开发导致的问题。</p>
+<p>https://mp.weixin.qq.com/s/ROAs29mWG8-6SSy_0WvzjQ<br>
+https://mp.weixin.qq.com/s/nTfdb1loEyP0--nMU3n2Qw</p>
 
                                 </div>
                     </article>
@@ -158,9 +189,9 @@
                     
                         <div class="next-post">
                             <div class="next">下一篇</div>
-                            <a href="https://lwhile.github.io/post/exponential-backoff">
+                            <a href="https://lwhile.github.io/post/go-timezone">
                                 <h3 class="post-title">
-                                    指数退避
+                                    Go 时区用法总结
                                 </h3>
                             </a>
                         </div>
@@ -181,7 +212,7 @@
             <ul class="markdownIt-TOC">
 <li>
 <ul>
-<li><a href="#constraint-%E4%B8%8E-override-%E7%9A%84%E5%8C%BA%E5%88%AB">constraint 与 override 的区别</a></li>
+<li><a href="#%E6%8E%A8%E5%B9%BF">推广</a></li>
 </ul>
 </li>
 </ul>

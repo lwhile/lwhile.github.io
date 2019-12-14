@@ -1,0 +1,251 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>
+    《Option Volatility &amp; Pricing》 学习笔记：远期价格的定价 | 神蛋杂谈
+</title>
+<link rel="shortcut icon" href="https://lwhile.github.io/favicon.ico?v=1576341339502">
+<!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
+<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://lwhile.github.io/styles/main.css">
+<!-- js -->
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://lwhile.github.io/media/js/jquery.sticky-sidebar.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+
+        
+</head>
+
+<body>
+    <div class="main">
+        <div class="header">
+    <div class="nav">
+        <div class="logo">
+            <a href="https://lwhile.github.io">
+                <img class="avatar" src="https://lwhile.github.io/images/avatar.png?v=1576341339502" alt="">
+            </a>
+            <div class="site-title">
+                <h1>
+                    神蛋杂谈
+                </h1>
+            </div>
+        </div>
+        <span class="menu-btn fa fa-align-justify"></span>
+        <div class="menu-container">
+            <ul>
+                
+                    
+                            <li>
+                                <a href="/" class="menu">
+                                    首页
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/archives" class="menu">
+                                    归档
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/tags" class="menu">
+                                    标签
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/post/about" class="menu">
+                                    关于
+                                </a>
+                            </li>
+                            
+                                
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $(".menu-btn").click(function() {
+            $(".menu-container").slideToggle();
+        });
+        $(window).resize(function() {
+
+            if (window.matchMedia('(min-width: 960px)').matches) {
+                $(".menu-container").css('display', 'block')
+            } else {
+                $(".menu-container").css('display', 'none')
+            }
+
+        });
+    });
+</script>
+
+            <div id="main-content" class="post-detail main-container">
+                <!-- left -->
+                <div id="content" class="main-container-left">
+                    <article class="post i-card">
+                        <h2 class="post-title">
+                            《Option Volatility &amp; Pricing》 学习笔记：远期价格的定价
+                        </h2>
+                        <div class="post-info">
+                            <time class="post-time">2019-06-15</time>
+                            
+                                <a href="https://lwhile.github.io/tag/jin-rong-jing-ji" class="post-tag i-tag
+                            i-tag-other_2">
+                            #金融经济
+                        </a>
+                                
+                        </div>
+                        
+                                <div class="post-content">
+                                    <p>远期价格，顾名思义就是将来得到某个东西时需要付出的价格，这个东西可以是某种实体商品，也可以是某种服务。文章后面的篇幅，就是探讨如果在当前节点下，如何去确定未来某个时间标的物的价格。</p>
+<p>首先给出一个计算远期合约价格的公式：</p>
+<pre><code>远期合约的价格 = 现货价格 + 现金可获得的收益 - 现货可以得到的收益
+</code></pre>
+<p>以一个例子来解释上面公式的意义，假如我想从甲手中买入一块地皮，价格是 100 万。我希望跟甲签订一个远期合约，约定一年后再以某个价格从他手中买入这块地皮。接下来就要确定，一年后要以一个什么样的价格来买入这块地，对双方才是公平的（这很重要）。</p>
+<p>如果我一年后再买入这块地，100 万在我手上的这一年是可以产生利息的，如果以年化 8% 来计算，持有 100 万现金一年可以得到的收益为 8 万。这 8 万的利息本来应该是甲的，所以一年后你要补偿给他。</p>
+<p>同理，持有土地也是有收益的，比如租金，在上面建工厂等。假设一年的租金收入是 5 万，这 5 万本来是我的，但是却被甲拿了，所以他一年后也要补偿我。</p>
+<p>所以一年后的价格是多少已经很明朗了，就是</p>
+<pre><code>现货价格（100 万）+ 现金可获得的收益（8 万）- 现货可以得到的收益（5 万） = 103 万
+</code></pre>
+<p>这个价格我们谁够不亏，谁都不赚（不考虑房产本身的增值的情况下），交易顺利完成。</p>
+<p>金融工具可以服务于实体就是这样体现的。</p>
+<p>接下来把目光放到交易所，毕竟上面的例子还是太简单了。</p>
+<h2 id="商品市场粮食-能源-贵金属等">商品市场（粮食、能源、贵金属等）</h2>
+<p>商品标的有其特殊性，当我们购入商品的时候，除了现金流，还需要考虑：</p>
+<ul>
+<li>合约交割的时间，像粮食这些商品是有保质期的</li>
+<li>存储成本</li>
+<li>保险成本</li>
+</ul>
+<p>我们用下面的字母表示这些变量：</p>
+<p>C = 商品价格</p>
+<p>t = 合约交割时间</p>
+<p>r = 无风险利率</p>
+<p>s = 每单位商品的存储成本</p>
+<p>i = 每单位商品的保险成本</p>
+<p>因为远期合约的价格可以用下面的公司表示</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi><mo>=</mo><mi>C</mi><mo>∗</mo><mo>(</mo><mn>1</mn><mo>+</mo><mi>r</mi><mo>∗</mo><mi>t</mi><mo>)</mo><mo>+</mo><mo>(</mo><mi>s</mi><mo>∗</mo><mi>t</mi><mo>)</mo><mo>+</mo><mo>(</mo><mi>i</mi><mo>∗</mo><mi>t</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">F = C * (1 + r * t) + (s * t) + (i * t)
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.07153em;">C</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">t</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathdefault">s</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">t</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathdefault">i</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">t</span><span class="mclose">)</span></span></span></span></span></p>
+<p>这个公式表明在一般情况下，远期合约的价格会高于现货价格。但是也有例外的情况，就是现货价格高于期货价格，我们称这种情况为现货溢价。比如一家公司急需要玉米生成饲料，如果没有的话公司就会倒闭，这种情况下公司肯定愿意为了马上获得玉米而付出更高的价格。</p>
+<h2 id="股票">股票</h2>
+<p>股票的远期价格会比商品的要复杂一些，因为股票有分红。</p>
+<p>用下面的字母表示相关的变量：</p>
+<p>S = 股票价格</p>
+<p>t = 远期合约的交割时间</p>
+<p>r = 合约期间内的利率</p>
+<p>di = 合约期间内股票的分红，i 表示第 i 次分红</p>
+<p>ti = 每次分红后距离下一次分红的时间</p>
+<p>ri = 从每次股息支付到远期合同到期的利率</p>
+<p>远期合约的价格可以用下面的公式表示：</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi><mo>=</mo><mi>S</mi><mo>∗</mo><mo>(</mo><mn>1</mn><mo>+</mo><mi>r</mi><mo>∗</mo><mi>t</mi><mo>)</mo><mo>−</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msub><mi>d</mi><mi>i</mi></msub><mo>∗</mo><mo>(</mo><mn>1</mn><mo>+</mo><msub><mi>r</mi><mi>i</mi></msub><mo>∗</mo><msub><mi>t</mi><mi>i</mi></msub><mo>)</mo><mspace width="2em"/></mrow><annotation encoding="application/x-tex">F=S*(1 + r*t)- \sum_{i=1}^{n} d_i*(1 + r_i*t_i)\qquad
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.13889em;">F</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">S</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">t</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:2.929066em;vertical-align:-1.277669em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.6513970000000002em;"><span style="top:-1.872331em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.050005em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3000050000000005em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.277669em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.61528em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:2em;"></span></span></span></span></span></p>
+<p>这个公式其实也很好理解，说到底还是用（现金 + 现金收益 - 持有标的的收益）的思想来求解，只不过多出了分红这几个变量 。</p>
+<p>https://mp.weixin.qq.com/s/ROAs29mWG8-6SSy_0WvzjQ</p>
+
+                                </div>
+                    </article>
+                    <!--  -->
+                    
+                        <div class="next-post">
+                            <div class="next">下一篇</div>
+                            <a href="https://lwhile.github.io/post/option-binary-tree">
+                                <h3 class="post-title">
+                                    期权系列：二叉树定价模型
+                                </h3>
+                            </a>
+                        </div>
+                        
+                            <div id="disqus_thread"></div>
+                            <div id="gitalk-container"></div>
+                </div>
+                <!-- middle -->
+                <div class="main-container-middle"></div>
+                <!-- right -->
+                <div id="sidebar" class="main-container-right">
+                    
+                        <!-- toc -->
+                        
+    <div class="toc-card i-card ">
+        <div class="toc-title i-card-title">目录</div>
+        <div class="toc-content">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%95%86%E5%93%81%E5%B8%82%E5%9C%BA%E7%B2%AE%E9%A3%9F-%E8%83%BD%E6%BA%90-%E8%B4%B5%E9%87%91%E5%B1%9E%E7%AD%89">商品市场（粮食、能源、贵金属等）</a></li>
+<li><a href="#%E8%82%A1%E7%A5%A8">股票</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+        <script>
+            function locateCatelogList() {
+                /*获取文章目录集合,可通过:header过滤器*/
+                var alis = $('.post-content :header');
+                /*获取侧边栏目录列表集合**/
+                var sidebar_alis = $('.markdownIt-TOC a');
+                /*获取滚动条到顶部的距离*/
+                var scroll_height = $(window).scrollTop();
+                for (var i = 0; i < alis.length; i++) {
+                    /*获取锚点集合中的元素分别到顶点的距离*/
+                    var a_height = $(alis[i]).offset().top;
+                    if (a_height < scroll_height) {
+                        /*高亮显示*/
+                        sidebar_alis.removeClass('on');
+                        $(sidebar_alis[i]).addClass('on');
+                    }
+                }
+            }
+            $(function() {
+                /*绑定滚动事件 */
+                $(window).bind('scroll', locateCatelogList);
+            });
+        </script>
+    </div>
+    
+                            
+
+                </div>
+
+
+
+
+            </div>
+
+
+            <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://lwhile.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+    <script>
+        $('#sidebar').stickySidebar({
+            topSpacing: 80,
+            // bottomSpacing: 60
+        });
+    </script>
+    
+</body>
+
+</html>

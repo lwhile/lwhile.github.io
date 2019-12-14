@@ -5,7 +5,7 @@
 <meta name="description" content="" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>
-    consul | 神蛋杂谈
+    货币学 | 神蛋杂谈
 </title>
 <link rel="shortcut icon" href="https://lwhile.github.io/favicon.ico?v=1576341339502">
 <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
@@ -98,32 +98,27 @@
                     
     <div class="i-card">
         <b>标签：#
-        consul</b>
+        货币学</b>
     </div>
     
         
             <article class="post i-card">
                 <h2 class="post-title">
-                    <a href="https://lwhile.github.io/post/consul-leader-election">
-                        使用 Consul 实现分布式环境下的 Leader 选举
+                    <a href="https://lwhile.github.io/post/mundell-triangle">
+                        货币知识入门：蒙代尔不可能三角
                     </a>
                 </h2>
                 <div class="post-info">
-                    <time class="post-time">2017-12-02</time>
+                    <time class="post-time">2018-05-20</time>
                     
-                        <a href="https://lwhile.github.io/tag/consul" class="post-tag i-tag
-                            i-tag-warning">
-            #consul
+                        <a href="https://lwhile.github.io/tag/jin-rong-jing-ji" class="post-tag i-tag
+                            i-tag-info">
+            #金融经济
         </a>
                         
-                        <a href="https://lwhile.github.io/tag/fen-bu-shi-xi-tong" class="post-tag i-tag
-                            i-tag-success">
-            #分布式系统
-        </a>
-                        
-                        <a href="https://lwhile.github.io/tag/5UKnY2CH9d" class="post-tag i-tag
+                        <a href="https://lwhile.github.io/tag/huo-bi-xue" class="post-tag i-tag
                             i-tag-other_4">
-            #Go
+            #货币学
         </a>
                         
                 </div>
@@ -132,31 +127,40 @@
                             <div class="post-content">
                                 
                                         <div class="post-content-content">
-                                            想象这样一种业务场景：你在一个分布式环境中部署了一个任务通知系统，或者一个定时任务系统，为了做高可用，每一个节点你都部署了一整套完整的服务。
-很快你就会发现，用户会收到重复的通知信息，或者相同的任务也会被执行了多遍。显然这是不行的。
-为了让我们的系统能够正常运行，并且又能实现高可用形式的部署，我们需要在这几个节点中选出一个Leader,做为最终执行任务的唯一节点。这篇文章将探讨如何实现这样一种需求，并且介绍如何使用consul来选举出我们的Leader。
-一致性问题
-我们的问题属于分布式一致性问题的范畴，即在分布式环境下，结点/服务之间如何做到类似单机的运行环境。这个问题有多重要呢，基本上只要是一个正常的分布式系统，一致性都会是一个必须要考虑的问题。这有点像你在打LOL或者吃鸡，你和队友们得保持战术的一致才能控制得住局面。从某个程度上讲，你和队友就组成了一个分布式系统。
-解决分布式一致性的算法很多，但在工业界大规模使用的只有两个：Paxos和Raft。Paxos的典型代表有Google的Chubby,还有Apache基金会的Zookeeper，这个Java的同学应该有听说过。Raft的代表有Etcd和TiKV,前者已经成为许多系统不可或缺的一部分，包括Kubernetes,而后者已经在成为NewSQL的代表作上一路狂奔着。不过这里得提一句，不管是Google还是Pingcap（TiKV的开发商）,都对Paxos和Raft应用到工业软件上做了优化。
-要正确得实现了Paxos和Raft算法都不是一件特别容易的事，尤其是Paxos，Raft还好些。但如果想每一个服务都嵌入一个Paxos或者Raft，这对于维护将是一场灾难。Google的做法是使用Chubby作为一致性的基础服务提供者，在这之上提供分布式锁和Leader选举的服务（是不是有点PaaS的味道）。而这篇文章将要使用的，是一个能提供类似服务的开源软件：Consul
-使用Consul
-回到这篇文章的主题，要解决文章最开始提到的那个问题，我们可以在几个服务之间选择一个Leader出来，具体的任务交给Leader，其他结点在Leader出现问题的时候再补上去成为一个新的Leader。我们将Leader的选举交给Consul帮我们解决，Consul只要为我们做一件事就行：给我们一把分布式的锁，哪个服务能拿到这个锁，谁就是Leader。
-Consul在我们公司被用来做域名服务和建康检查，而它刚好提供了一个基于Raft算法的Kv store(Kv store可以作为分布式锁的实现基础)的功能。我们可以在这个kv store里面写入一对kv, key是一个固定的值，而value则是能够唯一代表节点/服务的ID，通过Value我们就可以知道谁是Leader。
-Consul提供了一个Session机制，用它来代表服务与Consul节点之间的会话关系，并且能提供一个代表这个会话的Session ID,这个ID将作为上面提到的Value写入kv中。
-整个流程经过几次调整，最后设计出来是这样的：
-服务启动时，向Consul注册一个Session，得到一个Session ID。
-将Session ID作为Value，字符串leader(自由定义)作为key，写入到KV中。
-若写入成功，则当选为Leader.若写入失败，则表示竞选失败。
-每个Session都会有一个TTL（我们公司定的是Consul的最小值10s），当选为Leader的服务需要定时延长改TTL。比如每隔5s延长一次。
-竞选失败的节点，则在后台轮询，不断尝试成为Leader。
-业务活动发起时，先检查当前所在节点是否是Leader,如果是才能真正发起业务，如果不是，则丢弃。
-这样我们就可以解决文章开始时提到的那个问题了。
-感觉文章写飘了，说到的东西有点多，Consul的这个点反而没有什么好讲的。其实重点是一致性算法和分布式锁的实现，有兴趣的同学可以看下相关的论文，Google搜一下就有了。笔者最近也在阅读和翻译谷歌实现Chubby的那篇论文，翻译的内容挂在Github上，不过还没有翻译完成，有兴趣的同学欢迎一起翻译，在Github搜”Chubby中文”就能找到项目了，或者点击原文链接也行。
-https://mp.weixin.qq.com/s/gkA1qDx8e3XrNXXnxLyHfQ
+                                            因为工作的关系，我经常需要在美元和人民币之间做兑换。在这个过程中接触到了一些货币知识。这些货币知识成为一个契机，慢慢得提高了我对这个世界的认知水平。
+今天要分享的就是货币体系中一个非常著名的悖论：蒙代尔不可能三角。
+这个悖论描述起来很简单，就是固定汇率、 独立货币政策和国际资本自由流动这三个东西, 一个国家或地区最多只能拥有两个, 不能同时拥有 三个。
+固定汇率
+
+固定汇率制是以本位货币本身或法定含金量作为确定汇率的基准，各国货币间的汇率基本固定，其波动限制在一定幅度之内的汇率制度。
+
+典型如港币。港币使用的是联系汇率制度，与美元进行挂钩，每 1 美元可以兑换 7.8 左右的港币。这个 1:7.8 的比值并不是固定不变的，而是在一个小范围内波动，这个波动范围目前是 7.75 ～ 7.85。当 1 美元可以兑换到 7.85 港币时（比如这段时间），港币就进入到了弱方阶段。按照供求关系的理论，市场上流动的港币多于美元，物以稀为贵，港币就开始贬值。为了维护联系汇率制度，香港金管局就要向市场投放美元，回收港币。同样的道理，当 1 美元可以兑换 7.75 港币时，香港金管局就要向市场投放港币，回收美元。
+
+
+固定汇率是反面就是浮动汇率，最典型的就是美国还有日本这些发达国家，政府不控制美元与任何货币的兑换比例，而是让市场由供需关系去动态决定。
+固定汇率和浮动汇率没有好坏之分，这只是国家或者地区的操盘手根据现状做出的决定。
+独立货币政策
+独立货币政策指中央银行可以自己决定本国利率高低，就这么简单。利率是一个很神奇的东西，各国的中央银行可以通过利率影响到社会经济的方方面面。以后有机会再详细说下它。
+还是以香港为例子。香港目前的货币政策是无法由香港政府控制的，由于港币与美元挂钩的关系，当美国加息时（下个月美国可能就要再加息一次），香港也得跟着加息。不加息可以吗？当然可以，只不过会有后果。这个后果是什么，后面会有一个例子来说明。
+香港的反面就是大陆以及美国。比如人民银行制定人民币利率时不必考虑美元利率是多少。
+国际资本自由流动
+国际资本自由流动指一个国家的企业和个人可以自由到海外投资, 同时海外资本进入本国时也基本不受限制。
+还是以香港为例。我们知道香港被人们称为自由港，只要不是犯法的资本（比如洗钱），都可以在香港自由流动，不受香港政府的管制。从某种程度香港的发展也正是得益于此。
+而在大陆，资本是不能够自由流动的。最最最典型的例子，就是每个公民一年只有 5w 美元的额度给你用。用完了，对不起。
+
+蒙代尔不可能三角是怎么产生的
+我用一个例子解释这个三角是怎么产生的，这个例子来自于一本书《还原真实的美联储》。
+现在有 A 国和 B 国两个国家，假设 A 国不受这个三角的限制，同时拥有了上面这三样东西，将会发生什么情况。
+如果 A 国与 B 国的汇率固定在 1 : 1。在独立的政策下，A 国的央行决定将利率定为 5%，而 B 国的利率为 2%。这时候你从 B 国贷款了 100 万 ，到期的时候需要还 102 万。因为资本可以在国际间自由流动，那么只要你将这 100 万转移到 A 国存起来，按照 1:1 的汇率，换成了 100万 A 币，在 5% 的利率下，到期后你可以拿到 105 万 A 币。将这 105 万 A 币转移回 B 国，同理可以换成 105 万 B 币。减掉还给银行的 102 万，整个过程下来你就赚了 3 万 B 币。
+这 3 万 B 币从哪里来的？A 国的央行。没错，你撸了 A 国的羊毛。这种行为无异于空手套白狼，几乎是无风险的套利行为，市场一定不会放过这种馅饼。大量的资金就会从 B 国转移进 A 国后再流出，A 国的外汇储备用不了多久就会被耗光。
+所以，一个国家和地方绝对不能长久同时拥有固定汇率、自由资本流动和独立货币政策, 否则最后必然会以金融危机的方式 结束。
+
+在固定汇率、独立货币政策和国际资本自由流动中三选二, 那么有三种不同的情况。这三种情况在现实中都可以找到例证。美国选择了独立货币政策和自由 资本流动, 因此必须放弃固定汇率。目前美元采用的是浮动汇率制, 不与任何货币或者贵重金属挂钩。中国选择了固定 汇率：人民币基本和美元挂钩。同时人民 银行有独立制定人民币利率的权力, 因此必须放弃自由资本流动。
+
 
                                         </div>
                                         
-                                            <a class="btn btn-text" href="https://lwhile.github.io/post/consul-leader-election">Read More ~</a>
+                                            <a class="btn btn-text" href="https://lwhile.github.io/post/mundell-triangle">Read More ~</a>
                             </div>
                 </div>
             </article>

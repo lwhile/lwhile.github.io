@@ -1,0 +1,349 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>
+    期权 | 神蛋杂谈
+</title>
+<link rel="shortcut icon" href="https://lwhile.github.io/favicon.ico?v=1576341339502">
+<!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
+<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://lwhile.github.io/styles/main.css">
+<!-- js -->
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://lwhile.github.io/media/js/jquery.sticky-sidebar.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+
+</head>
+
+<body>
+    <div class="main">
+        <div class="header">
+    <div class="nav">
+        <div class="logo">
+            <a href="https://lwhile.github.io">
+                <img class="avatar" src="https://lwhile.github.io/images/avatar.png?v=1576341339502" alt="">
+            </a>
+            <div class="site-title">
+                <h1>
+                    神蛋杂谈
+                </h1>
+            </div>
+        </div>
+        <span class="menu-btn fa fa-align-justify"></span>
+        <div class="menu-container">
+            <ul>
+                
+                    
+                            <li>
+                                <a href="/" class="menu">
+                                    首页
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/archives" class="menu">
+                                    归档
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/tags" class="menu">
+                                    标签
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/post/about" class="menu">
+                                    关于
+                                </a>
+                            </li>
+                            
+                                
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $(".menu-btn").click(function() {
+            $(".menu-container").slideToggle();
+        });
+        $(window).resize(function() {
+
+            if (window.matchMedia('(min-width: 960px)').matches) {
+                $(".menu-container").css('display', 'block')
+            } else {
+                $(".menu-container").css('display', 'none')
+            }
+
+        });
+    });
+</script>
+
+            <div id="main-content" class="post-container main-container">
+                <div id="content" class="main-container-left">
+                    
+    <div class="i-card">
+        <b>标签：#
+        期权</b>
+    </div>
+    
+        
+            <article class="post i-card">
+                <h2 class="post-title">
+                    <a href="https://lwhile.github.io/post/brown-motion">
+                        使用 R 模拟金融市场的布朗运动
+                    </a>
+                </h2>
+                <div class="post-info">
+                    <time class="post-time">2019-07-21</time>
+                    
+                        <a href="https://lwhile.github.io/tag/qi-quan" class="post-tag i-tag
+                            i-tag-other_2">
+            #期权
+        </a>
+                        
+                        <a href="https://lwhile.github.io/tag/jin-rong-jing-ji" class="post-tag i-tag
+                            i-tag-warning">
+            #金融经济
+        </a>
+                        
+                </div>
+                <div class="post-article">
+                    
+                            <div class="post-content">
+                                
+                                        <div class="post-content-content">
+                                            布朗运动的发现源于19 世纪的植物学家罗伯特 • 布朗，他发现在显微镜中观察花粉微粒在水中的运动是无规则的；到了 20 世纪初期，爱因斯坦才详细解释了布朗运动：花粉微粒的无规则运动是水分子撞击形成的。在金融领域，布朗运动运动背后代表的随机过程被大量运用在 BSM 期权定价公式上，这也是我写这样一篇文章的原因。
+在市场中的一些人看来，市场的波动完全是随机的。这其中最出名的就是纳西姆·尼古拉斯·塔勒布，你可能没听说这个名字，但是你应该知道这几本书，《黑天鹅》，《随机致富的傻瓜》。他们都出自塔勒布之手。
+标准布朗运动 { B(t): t &amp;gt; 0 } 的定义为：
+
+B(0) = 0；
+对于所有的 0 &amp;lt; s &amp;lt; t，变化量 B(sn) - B(sn-1) 之间的值是相互独立的；
+对于所有的 0 &amp;lt; s &amp;lt; t，变化量 B(sn) - B(sn-1) 符合均值为 0，方差为 (t - s) 的正态分布；
+
+同时布朗运动也是一个马尔可夫过程，意味着 t+1 时刻的取值仅和 t 时刻有关，与 t-1 以及之前任何时刻的值无关，即 t 时刻以及包含了判断接下来走势需要的所有信息。用大白话说就是，明天某只股票的价格要怎么走，只和今天市场的表现有关，和今天之前的任一一天都无关。
+
+布朗运动模拟出来的走势图是不是和股市走势很像？
+连续还是离散？
+随机过程可以分为四类：
+
+离散时间 + 离散空间
+离散空间 + 连续时间
+连续时间 + 离散空间
+连续时间 + 连续空间
+
+标准的布朗运动是连续时间+连续空间，但是在金融市场，即便是交易时间最长（周一至周五 24 小时在全球各个时区不停交易）的货币市场，也会存在周末两天的时间缺口。对于价格，也会有跳空情况的存在。因此现实世界的产生的数据序列肯定是时间与空间都离散，这点要和理想模型区分开。
+使用 R 语言模拟布朗运动
+这篇文章之所以使用 R 语言做代码载体，是因为我最近在看金融统计学的资料时发现 R 语言出现的频率不是一般得高，几乎总是和 Python 一起出现。由于我对 Python 已经比较熟悉，所以就选个不熟悉语言玩玩。
+R 环境的安装很简单，Mac、Linux、Windows 都有各自的安装包，开箱即用，推荐清华的镜像源 https://mirrors.tuna.tsinghua.edu.cn/CRAN/
+安装后进入 REPL ，REPL 对于这次的代码量来说足够使用了。
+第一步，先准备数据序列。这里需要一堆随机数，这些随机数要满足布朗运动的定义。在 R 里面，生成满足这样要求的数据可以使用函数
+rnorm(n, mean, var)
+参数 n 表示要生成的随机数个数，mean 表示均值，var 表示方差。
+因此生成 10 个可以代表布朗运动的代码为：
+rnorm(10, 0，1)
+// [1] -0.28180192  0.07735837 -1.25260216 -0.64893090  0.97454564  1.30477018  0.89177639 -0.47591015  2.02248821 -2.34884907
+
+
+我们把随机数的数量加大，直接调至 1000 个，并用变量 dis 存下来：
+dis = rnorm(1000, 0, 1)
+
+
+接下来把这 1000 个数据可视化展示出来。对于 R 来说，不需要安装额外的第三方包，直接运行 plot 即可（这点倒是比 python 强......）
+ plot(dis, type=&amp;quot;l&amp;quot;, main=&amp;quot;brownian_montion&amp;quot;, xlab=&amp;quot;time&amp;quot;, ylab=&amp;quot;price&amp;quot;)
+
+
+得到的结果为：
+
+翻车了，不是说可以用模拟股价的运行吗？哪个产品会的价格会走成这副鬼样啊！
+这种现象其实也是我亲自动手去模拟之后才发现的。在这里，要让生成的数据看起来像真正的股价走势图，只需要对生成的数据最一个小小的操作即可：
+dis = cumsum(dis)
+
+
+这句代码使用 cumsum 函数把 dis 序列的每个元素做了累积求和的运算，下面是它的可视化结果：
+
+很像真正的股价走势对吧？在高位快速下跌，中间经历一波小反弹，被套的人发现无力创新高后又继续抛售，说得我自己都信了，然而这真的是用随机数据生产的一幅图。
+其实看到这幅图的时候我立马想起 2015 年的 A 股，我把图调出来让读者感受下中间的奇妙。
+
+https://mp.weixin.qq.com/s/WxYqY4DWoMP6Bo2GeKE8Iw
+
+                                        </div>
+                                        
+                                            <a class="btn btn-text" href="https://lwhile.github.io/post/brown-motion">Read More ~</a>
+                            </div>
+                </div>
+            </article>
+            
+            <article class="post i-card">
+                <h2 class="post-title">
+                    <a href="https://lwhile.github.io/post/option-binary-tree">
+                        期权系列：二叉树定价模型
+                    </a>
+                </h2>
+                <div class="post-info">
+                    <time class="post-time">2019-06-04</time>
+                    
+                        <a href="https://lwhile.github.io/tag/qi-quan" class="post-tag i-tag
+                            i-tag-success">
+            #期权
+        </a>
+                        
+                        <a href="https://lwhile.github.io/tag/jin-rong-jing-ji" class="post-tag i-tag
+                            i-tag-other_1">
+            #金融经济
+        </a>
+                        
+                </div>
+                <div class="post-article">
+                    
+                            <div class="post-content">
+                                
+                                        <div class="post-content-content">
+                                            最近为了更加深入得学习期权，我把忘了个底朝天的数学重新拿了起来。从高中数学开始，我会一直复习到微积分，一直到我搞懂 BSM 公式中的每一个步骤，以及他们衍生出来的数学知识。套用马克思的话，有百分之五十的利润，人类就会铤而走险；为了百分之一百的利润，人类就敢践踏一切人间法律。而对于 20 多岁的我来说，期权里面包含的无限可能，就能让我无视掉智商被碾压的羞辱感。
+废话不多说，下面是推导的步骤（没接触过期权的同学基本可以不用看）
+假设某股票 XYZ，其价格目前为 20 元，并且通过一些条件知道，这个股票在三个月将会变为 22 元，或者 18 元。接下来要做的，就是为三个月后，行权价为 21 的 Call Option 定价。由于 Call Option 的性质，当 XYZ 在三个月达到 22 元时，期权的价格为 1 元；若三个月后降为 18，则该 Call Option 作废，价值为 0。
+二叉树模型比较简单的地方在于，不像 BSM 模型，我们只需要引入一个假设条件就可以继续往下推算，即「市场没有套利的机会」，因此如果使用股票和 Call Option 的空头来构造一个无风险头寸，则可以得到：
+22∂ - 1 = 18∂
+
+解得 ∂=0.25，即在这个头寸中，我们需要买入 0.25 股 XYZ（什么，股票还可以买小数股？没错，还真可以！我们公司就提供了美股碎股交易的 API，需要请联系我），不管三个月后 XYZ 价格是 22 还是 18，只要在这个区间内，这个头寸（0.25 股 XYZ 以及一份看涨期权的空头）的收益都会是 22 * 0.25 - 1 = 4.5
+由于该头寸是风险的，所以三个月后 4.5 的收益，就是无风险收益。假设市场的无风险收益是年化 12%，根据复合增长率的公式，假设该头寸当前价值为 µ，则
+µ * ℮^(0.12*3/12) = 4.5
+
+解得 µ ~= 4.3670，把它代入下面这个方程：
+20 * ∂ - c = µ
+
+∂, µ 这两个变量现在是已知的，因此我们可以知道期权的价格 c 为
+20 * ∂ - µ = 20 * 0.25 - 4.3670 = 0.633
+
+没了，整个推导过程就是这样，在该模型下，这个三个月后到期，XYZ 执行价格为 21 的购期权价格就是 0.633，是不是很简单？
+后面还有这个过程的通用化公式以及其他扩展，下次继续，最近几天肯定更。
+推广
+基于上面的推导过程，可以将整个过程通用化。
+假设当前 XYZ 的价格为 Sn，其某个期限为 T 的期权的价格为 Fn。在该时间内，XYZ 的价格可能会涨到 Su，期权的价格为 Fu，或者跌倒 Sd，期权的价格为 Fd。
+接下来开始构造我们的无风险收益仓位：
+同样是 ∂ 单位的股票多头，以及一份 Call Option 的空头，若接下来股票上涨，则整个头寸的价值为：
+Su∂ - Fu
+
+若 XZY 下跌，则头寸的价值为：
+Sd∂ - Fd
+
+由于该头寸无风险，故：
+Su∂ - Fu = Snd∂ - Fd
+
+解得：
+∂ = (Fu - Fd)/(Su - Sd)
+
+∂ 在这里即是 XYZ 多头的单位，也可以表示期权的价格变化与股票价格变化的比率。
+由于无风险，我们可以求得若 T 时间后股票价格为 Su，则整个头寸的当前价值为：
+V = (Su∂ - Fu)/e^(rT)
+
+因此可以得到：
+V = Sn∂ - F = (Su∂ - Fu)/e^(rT)
+
+解得：
+F = ∂(1 - Su℮^-rT) + Fu℮^-rT
+
+把 ∂ 代入得：
+F = Sn∂ - (Su∂ - Fu)/e^(rT)
+  = ∂[Sn - Su/e^(rT)] + Fu/e^(rT)
+
+∂ = (Fu - Fd)/(Su - Sd)
+
+👆 这公式即为二叉树模型下期权价格的计算公式，我们把最上面的数字代进去：
+Sn = 20
+Su = 22
+Sd = 18
+Fu = 1
+Fd = 0
+r = 0.12
+T = 0.25
+∂ = 0.25
+
+得到 F = 0.633，和最开始的例子一样
+F = 0.25(20-22/e^(0.12*0.25)) + 1/e^(0.12*0.25) = 0.633
+
+https://mp.weixin.qq.com/s/ROAs29mWG8-6SSy_0WvzjQ
+https://mp.weixin.qq.com/s/nTfdb1loEyP0--nMU3n2Qw
+
+                                        </div>
+                                        
+                                            <a class="btn btn-text" href="https://lwhile.github.io/post/option-binary-tree">Read More ~</a>
+                            </div>
+                </div>
+            </article>
+            
+                <!-- 翻页 -->
+                
+                </div>
+                <!--  -->
+                <div class="main-container-middle"></div>
+                <!--  -->
+                <div id="sidebar" class="main-container-right">
+
+                    <!-- 个人信息 -->
+                    
+    <div class="id_card i-card">
+        <div class="id_card-avatar" style="background-image: url(https://lwhile.github.io/images/avatar.png?v=1576341339502)">
+        </div>
+        <h1 class="id_card-title">
+            神蛋杂谈
+        </h1>
+        <h2 class="id_card-description">
+            
+        </h2>
+        <!--  -->
+        <div class="id_card-sns">
+            <!-- github -->
+            
+                    <!-- twitter -->
+                    
+                            <!-- weibo -->
+                            
+                                    <!-- facebook -->
+                                    
+
+        </div>
+    </div>
+    
+
+                        <!-- 公告栏 -->
+                        
+
+                </div>
+            </div>
+
+
+
+            <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://lwhile.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+    <script>
+        $('#sidebar').stickySidebar({
+            topSpacing: 80,
+            // bottomSpacing: 60
+        });
+    </script>
+</body>
+
+</html>

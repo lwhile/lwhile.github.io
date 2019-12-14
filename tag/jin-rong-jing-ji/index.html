@@ -5,7 +5,7 @@
 <meta name="description" content="" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>
-    神蛋杂谈
+    金融经济 | 神蛋杂谈
 </title>
 <link rel="shortcut icon" href="https://lwhile.github.io/favicon.ico?v=1576341339502">
 <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
@@ -96,6 +96,11 @@
             <div id="main-content" class="post-container main-container">
                 <div id="content" class="main-container-left">
                     
+    <div class="i-card">
+        <b>标签：#
+        金融经济</b>
+    </div>
+    
         
             <article class="post i-card">
                 <h2 class="post-title">
@@ -107,12 +112,12 @@
                     <time class="post-time">2019-07-21</time>
                     
                         <a href="https://lwhile.github.io/tag/qi-quan" class="post-tag i-tag
-                            i-tag-banana">
+                            i-tag-error">
             #期权
         </a>
                         
                         <a href="https://lwhile.github.io/tag/jin-rong-jing-ji" class="post-tag i-tag
-                            i-tag-error">
+                            i-tag-other_4">
             #金融经济
         </a>
                         
@@ -193,7 +198,7 @@ https://mp.weixin.qq.com/s/WxYqY4DWoMP6Bo2GeKE8Iw
                     <time class="post-time">2019-06-15</time>
                     
                         <a href="https://lwhile.github.io/tag/jin-rong-jing-ji" class="post-tag i-tag
-                            i-tag-other_4">
+                            i-tag-other_1">
             #金融经济
         </a>
                         
@@ -265,12 +270,12 @@ https://mp.weixin.qq.com/s/ROAs29mWG8-6SSy_0WvzjQ
                     <time class="post-time">2019-06-04</time>
                     
                         <a href="https://lwhile.github.io/tag/qi-quan" class="post-tag i-tag
-                            i-tag-other_1">
+                            i-tag-success">
             #期权
         </a>
                         
                         <a href="https://lwhile.github.io/tag/jin-rong-jing-ji" class="post-tag i-tag
-                            i-tag-other_2">
+                            i-tag-primary">
             #金融经济
         </a>
                         
@@ -355,299 +360,6 @@ https://mp.weixin.qq.com/s/nTfdb1loEyP0--nMU3n2Qw
             
             <article class="post i-card">
                 <h2 class="post-title">
-                    <a href="https://lwhile.github.io/post/go-timezone">
-                        Go 时区用法总结
-                    </a>
-                </h2>
-                <div class="post-info">
-                    <time class="post-time">2019-02-19</time>
-                    
-                        <a href="https://lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
-                            i-tag-success">
-            #计算机
-        </a>
-                        
-                        <a href="https://lwhile.github.io/tag/5UKnY2CH9d" class="post-tag i-tag
-                            i-tag-banana">
-            #Go
-        </a>
-                        
-                </div>
-                <div class="post-article">
-                    
-                            <div class="post-content">
-                                
-                                        <div class="post-content-content">
-                                            坊间有个说法，说中美两国的程序员除了薪资、加班强度外，还有个比较有趣的差异，就是在编码时对于时区的敏感程度也不同。
-「大部分」美国程序员在时区问题上很有经验，因为美国在日常生活中会使用到 3 个时区。而中国「大部分」程序员在编码时基本不会考虑时区问题，因为大家都在东八区，没那个烦恼。
-在过去一年我维护着一个公司内部的日历库，用于做交易时间的计算。在这个过程中被时区问题折磨得很难受，不过也积累一些 Go 处理时区上的经验。
-时区配置
-时区的配置一定要声明在配置文件中，比如下面这种 yaml 格式：
-
-timezone: Asia/Hong_Kong
-
-别想着用机器时区一劳永逸这个问题，因为机器的变数太多了。
-载入时区
-在 Go 中，时区被封装在 time.Location 中进行抽象，而载入时区有两种方法
-
-通过 IANA 数据库
-
-给 time.LoadLocation 传入一个符合 IANA 时区数据库的时区名字，比如：
-
-Asia/Hong_Kong
-
-
-通过偏移量
-
-time.FixedZone(&amp;quot;UTC-8&amp;quot;, -8 **60 **60)
-转换时区
-比较简单的操作，直接调一个 time struct instance 的 In(*Location) 方法。
-修改时区
-注意修改时区和转换时区是两种不同的概念。
-比如北京时间 20:00pm 转换时区，以美东时区为例，会是 7:00am (冬令时)
-而修改时区是指把北京 20:00pm 修改为美东 20:00pm，可以这样操作：
-
-// Pseudo code
-var estTime time.Time
-var cstTime time.Time
-var estTimezone *time.Location
-// 通过 time.Date 方法重新生成一个 time struct instance
-estTime := time.Date(cstTime.Year(), cstTime.Month(),..., estTimezone)
-
-Round to day
-实在想不起一个名词可以形容 Round to day 的过程，我们用这个方法来做日内时间的比较。
-比较典型的应用场景是判断是否到了开市/休市时间。由于在 Go 中 time 类型是包含有年、月信息的，所以要表达「每天早上 9:30」 这个时间不大好做。
-既然不好做，那就把它们去掉。
-
-// Pseudo code
-func RoundToDay(t time.Time) time.Time {
-// 注意在 Go 中 zero time 并不是 0 year 0 month 0 day，而是 1，所以用 0 的话会溢出喔
-return time.Date(1,1,t.Day(), t.Hour() ...)
-}
-
-LMT
-LMT 这个问题是在 Round to day 上面引发出来的，说起来也很有趣。LMT 本意是指 local mean time（地方平时，在指定的经度范围内使用一致时间的地方太阳时）。
-如果你用试图在 Go 里面用香港时区构建一个 zero time 的话，就会发现最后返回出来的 time struct instance 的 location 信息是 LMT。这个问题是在一处单元测试中发现的，死活无法通过测试（嗯，单测真的很重要）。
-不过这是为什么？
-我相信知道这个知识点的人绝对少之又少，这是一个非常非常冷的知识（最后通过我那位知识储备量非常丰富的同事知道的这个）
-
-香港時間的授時服務，是香港天文台從1883年成立至今的主要職責。早期香港天文台使用赤道儀及中星儀，透過觀測星象測量時間。當時香港時間是當地平均時間（LMT）UTC+7:36:42（準確值為UTC+7:36:41.8842）。香港天文台最早於1885年1月1日對公眾授時[1]，當年香港天文台於九龍尖沙咀警署設置桅杆，以升降時間球的方式對外發布時間。1885年1月1日，香港天文台於中午12時50分把時間球升到桅杆頂端，然後於下午1時正，首次把時間球降下，成為香港首次報時訊號，並作為香港時間的標準。用於報時的時間球訊號塔，後來於1933年因為電台報時的開展而拆除。1904年10月30日，香港時間正式確定為格林威治標準時間快8小時（GMT+8）[2]。2004年，天文台安裝了一套高準確度授時系統，利用全球定位系統共視方法，向國際度量衡局提供天文台的原子鐘時間數據，參與訂定協調世界時。天文台亦根據國際度量衡局提供的時間數據調校原子鐘，使其準確度保持在一百萬分之一秒以內。現時，香港天文台以銫原子鐘報時系統作為香港時間的標準，誤差僅為每日1微秒之內。香港天文台設有互聯網時間伺服器，為互聯網的用戶提供準確的時間校正服務[3]。
-
-根据上面的记录来看几个例子吧，首先是 1904 年 10 月 30 日后香港使用 GMT+8，我们把时间定格在它前一秒：
-
-location, _ := time.LoadLocation(&amp;quot;Asia/Hong_Kong&amp;quot;)
-
-t := time.Date(1904,10,29,11,59,59,59,location)
-fmt.Println(t) // 1904-10-29 11:59:59.000000059 +0736 LMT &amp;lt;- LMT 无疑
-然后是 1904 年 10 月 30 日 零点：
-
-location, _ := time.LoadLocation(&amp;quot;Asia/Hong_Kong&amp;quot;)
-
-t := time.Date(1904,10,30,0,0,0,0,location)
-fmt.Println(t) // 1904-10-30 00:23:18 +0800 HKT &amp;lt;- HKT 了。
-厉害吧。。。还有更厉害的。。。
-
-location, _ := time.LoadLocation(&amp;quot;Asia/Hong_Kong&amp;quot;)
-
-t := time.Date(1942,10,30,0,0,0,0,location)
-fmt.Println(t) // 1942-10-30 00:00:00 +0900 JST
-用 1942 年 10 月 30 日构建一个香港时间，时区会是（JST）日本标准时间。Why?
-原因是这个：
-
-香港日佔時期，又稱為香港日治時期或香港淪陷時期，是指第二次世界大戰時大日本帝國軍事占領香港的時期：由1941年12月25日香港總督楊慕琦投降起，至1945年8月15日日本無條件投降為止；香港人俗稱這段時期為「三年零八個月」。
-
-别以为 Go 的开发团队这么有心，实际上 Go 也是读操作系统的 zoneinfo 文件。只能说在某个层面上操作系统也记录着每个地区的历史。。。
-
-                                        </div>
-                                        
-                                            <a class="btn btn-text" href="https://lwhile.github.io/post/go-timezone">Read More ~</a>
-                            </div>
-                </div>
-            </article>
-            
-            <article class="post i-card">
-                <h2 class="post-title">
-                    <a href="https://lwhile.github.io/post/go-time-parser">
-                        关于 time.Parse 99% 的 Gopher 都不知道的秘密
-                    </a>
-                </h2>
-                <div class="post-info">
-                    <time class="post-time">2019-01-03</time>
-                    
-                        <a href="https://lwhile.github.io/tag/5UKnY2CH9d" class="post-tag i-tag
-                            i-tag-info">
-            #Go
-        </a>
-                        
-                </div>
-                <div class="post-article">
-                    
-                            <div class="post-content">
-                                
-                                        <div class="post-content-content">
-                                            
-
-                                        </div>
-                                        
-                                            <a class="btn btn-text" href="https://lwhile.github.io/post/go-time-parser">Read More ~</a>
-                            </div>
-                </div>
-            </article>
-            
-            <article class="post i-card">
-                <h2 class="post-title">
-                    <a href="https://lwhile.github.io/post/git-rebase">
-                        git rebase 使用总结
-                    </a>
-                </h2>
-                <div class="post-info">
-                    <time class="post-time">2018-06-03</time>
-                    
-                        <a href="https://lwhile.github.io/tag/git" class="post-tag i-tag
-                            i-tag-banana">
-            #git
-        </a>
-                        
-                </div>
-                <div class="post-article">
-                    
-                            <div class="post-content">
-                                
-                                        <div class="post-content-content">
-                                            今天来介绍下 git 的 rebase 命令。这个命令是我进入新公司之后才了解到的，以前还真的没使用过，尽管我接触 git 已经有 3 年了。
-假如现在有个项目，它的 git 状态是这样的：
-
-OK，我们开始今天的内容。
-分支合并
-我们先在 master 分支的基础上新建一个 dev 分支, 并做一个 commit：
-
-$(master) git checkout -b dev
-
-
-这时候另外一个开发人员发现 master 上的代码有一个问题，对 master 的代码做了一个 fix，使得 master 的 head 向前推进了一步:
-
-如果我们想将 master 的 Fix 改动应用到 dev 分支上，要如何做呢？
-可以使用 merge，我们来试下：
-
-$(dev) git merge master
-
-
-merge 过后 dev 分支向前推进了一步。我们看下多出来的 commit 信息是怎样的
-commit 02581b628586b29c5c8a3cfd04d1563fa4e5b5a7 (HEAD -&amp;gt; dev)
-Merge: 18d26a0 8985e47
-Author: lwhile &amp;lt;lwhile521@gmail.com&amp;gt;
-Date:   Sun Jun 3 15:26:55 2018 +0800
-
-    Merge branch &#39;master&#39; into dev
-
-dev 上 多出来的这个 commit（绿色的那个节点）, 就是我们的 merge 信息。
-有时候我们并不想要 git 记录这个 merge 信息，因为让 git 的历史记录变得很繁琐，要如何做呢？可以使用 rebase ！
-我们先回到 master 提交了 fix 之后的 git 状态：
-
-执行 rebase 命令：
-
-$ (dev) git rebase master
-
-这时候看下 git 状态：
-
-比较下 merge 和 rebase 之后的状态图，我们可以发现 masste 的 fix 被接到 dev 的后面，并且没有多出一个 merge 信息。这样 commit 信息是不是简洁了很多？
-commit 改写
-除了用在分支的合并上， rebase 命令还能帮你修改 commit 记录。
-我们让 dev 分支再向前推进 3 步：
-
-╰─$ git log
-commit 6639f35cc779afe6f7eb68f13faad0cfe2a8a7a4 (HEAD -&amp;gt; dev)
-Author: lwhile &amp;lt;lwhile521@gmail.com&amp;gt;
-Date:   Sun Jun 3 16:01:29 2018 +0800
-
-    add dev3.go
-
-commit c76ac0c0c0359170a6eca0ee1319ec16b2ae6351
-Author: lwhile &amp;lt;lwhile521@gmail.com&amp;gt;
-Date:   Sun Jun 3 16:01:10 2018 +0800
-
-    add dev2.go
-
-commit 20cd0cfcd64fee7c4459a1da527f8c2c239ac5e4
-Author: lwhile &amp;lt;lwhile521@gmail.com&amp;gt;
-Date:   Sun Jun 3 16:00:57 2018 +0800
-
-    add dev1.go
-
-提交完这 3 个 commit 之后，我们发现这 3 个 commit 属于同一个改动类型，完全没必要分成 3 个 commit。
-那要怎么做呢？还是可以使用 rebase
-
-$ (dev) git rebase -i HEAD~4
-
-执行该命令 shell 会进入交互模式（-i）
-pick c524f8e add dev.go
-pick 20cd0cf add dev1.go
-pick c76ac0c add dev2.go
-pick 6639f35 add dev3.go
-
-# Rebase df58ee3..6639f35 onto df58ee3 (4 commands)
-#
-# Commands:
-# p, pick = use commit
-# r, reword = use commit, but edit the commit message
-# e, edit = use commit, but stop for amending
-# s, squash = use commit, but meld into previous commit
-# f, fixup = like &amp;quot;squash&amp;quot;, but discard this commit&#39;s log message
-# x, exec = run command (the rest of the line) using shell
-# d, drop = remove commit
-#
-# These lines can be re-ordered; they are executed from top to bottom.
-#
-# If you remove a line here THAT COMMIT WILL BE LOST.
-#
-# However, if you remove everything, the rebase will be aborted.
-#
-# Note that empty commits are commented out
-
-根据提示，我们将文本做如下修改(将 pick 换成 s,至于为什么要这样写，可以看 git 的提示)：
-pick c524f8e add dev.go
-s 20cd0cf add dev1.go
-s c76ac0c add dev2.go
-s 6639f35 add dev3.go
-
-保存并退出：
-[detached HEAD 0a15d35] add dev.go
- Date: Sun Jun 3 15:38:35 2018 +0800
- 4 files changed, 0 insertions(+), 0 deletions(-)
- create mode 100644 dev.go
- create mode 100644 dev1.go
- create mode 100644 dev2.go
- create mode 100644 dev3.go
-Successfully rebased and updated refs/heads/dev.
-
-现在 git 又进入了如下状态，只不过绿色的那个节点包含了 4 个 commit 信息
-
-commit 0a15d3549ee9ec61ddeb33916c452fab2ad9b991 (HEAD -&amp;gt; dev)
-Author: lwhile &amp;lt;lwhile521@gmail.com&amp;gt;
-Date:   Sun Jun 3 15:38:35 2018 +0800
-
-    add dev.go
-
-    add dev1.go
-
-    add dev2.go
-
-    add dev3.go
-
-
-这时候再将 dev 合并进 master，commit 信息都会简洁很多，并且也有利于 review。
-总结
-rebase 是一个很神奇的工具，可以帮你做一些比较特别的改动。但要注意， rebase 是会隐藏你真实的修改记录的，所以最后呈现出来的 git 历史并不能表现你的真实操作，这点要注意。
-
-                                        </div>
-                                        
-                                            <a class="btn btn-text" href="https://lwhile.github.io/post/git-rebase">Read More ~</a>
-                            </div>
-                </div>
-            </article>
-            
-            <article class="post i-card">
-                <h2 class="post-title">
                     <a href="https://lwhile.github.io/post/mundell-triangle">
                         货币知识入门：蒙代尔不可能三角
                     </a>
@@ -656,12 +368,12 @@ rebase 是一个很神奇的工具，可以帮你做一些比较特别的改动�
                     <time class="post-time">2018-05-20</time>
                     
                         <a href="https://lwhile.github.io/tag/jin-rong-jing-ji" class="post-tag i-tag
-                            i-tag-other_4">
+                            i-tag-other_1">
             #金融经济
         </a>
                         
                         <a href="https://lwhile.github.io/tag/huo-bi-xue" class="post-tag i-tag
-                            i-tag-other_4">
+                            i-tag-primary">
             #货币学
         </a>
                         
@@ -709,184 +421,8 @@ rebase 是一个很神奇的工具，可以帮你做一些比较特别的改动�
                 </div>
             </article>
             
-            <article class="post i-card">
-                <h2 class="post-title">
-                    <a href="https://lwhile.github.io/post/dep-override">
-                        使用 override 解决 dep 中的依赖冲突
-                    </a>
-                </h2>
-                <div class="post-info">
-                    <time class="post-time">2018-05-02</time>
-                    
-                        <a href="https://lwhile.github.io/tag/5UKnY2CH9d" class="post-tag i-tag
-                            i-tag-warning">
-            #Go
-        </a>
-                        
-                </div>
-                <div class="post-article">
-                    
-                            <div class="post-content">
-                                
-                                        <div class="post-content-content">
-                                            公司的 Go 项目使用 dep 做为依赖管理的工具，在使用的过程中，因为项目依赖比较复杂，经常会遇到依赖冲突导致 dep ensure 命令无法执行成功。
-比如，正在开发中的项目A依赖了B和C，而 B 项目也依赖了 C 项目。
-
-A 项目的 Gopkg.toml
-[[constraint]]
-  branch = &amp;quot;master&amp;quot;
-  name = &amp;quot;B&amp;quot;
-
-[[constraint]]
-  branch = &amp;quot;master&amp;quot;
-  name = &amp;quot;C&amp;quot;
-
-B 项目的 Gopkg.toml
-[[constraint]]
-  branch = &amp;quot;master&amp;quot;
-  name = &amp;quot;C&amp;quot;
-
-接下来 A 项目因为开发的需要在 C 项目中新开了分支。在该分支合并进 master 分支之前，需要在 A 项目的 Gopkg.toml中指定分支名称。
-[[constraint]]
-  branch = &amp;quot;master&amp;quot;
-  name = &amp;quot;B&amp;quot;
-
-[[constraint]]
-  branch = &amp;quot;new_branch&amp;quot;
-  name = &amp;quot;C&amp;quot;
-
-这时候再执行   dep ensure 是无法成功的，会提示依赖发生了冲突。
-解决冲突的方法也很简单，在A项目的 Gopkg.toml中将C项目的constraint改为 override 就可以了。等到C项目的修改合并进 master 分支时，再将 constraint 改回来。
-[[constraint]]
-  branch = &amp;quot;master&amp;quot;
-  name = &amp;quot;B&amp;quot;
-
-[[override]]
-  branch = &amp;quot;new_branch&amp;quot;
-  name = &amp;quot;C&amp;quot;
-
-constraint 与 override 的区别
-dep 会如实得处理 constraint 类型的依赖，在这个例子中，尽管在 A 的依赖中将 C 的分支设置为 new_branch，但是在B项目中，引用的包还是依旧使用 master 分支 的代码。
-如果将A项目的 constraint 改为 override , 则会强制让 B 项目在拉取 C 项目的代码时，拉取的是 new_branch 分支上的代码，避免因为协同开发导致的问题。
-
-                                        </div>
-                                        
-                                            <a class="btn btn-text" href="https://lwhile.github.io/post/dep-override">Read More ~</a>
-                            </div>
-                </div>
-            </article>
-            
-            <article class="post i-card">
-                <h2 class="post-title">
-                    <a href="https://lwhile.github.io/post/exponential-backoff">
-                        指数退避
-                    </a>
-                </h2>
-                <div class="post-info">
-                    <time class="post-time">2018-04-02</time>
-                    
-                        <a href="https://lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
-                            i-tag-">
-            #计算机
-        </a>
-                        
-                </div>
-                <div class="post-article">
-                    
-                            <div class="post-content">
-                                
-                                        <div class="post-content-content">
-                                            这是加入新公司后的第一篇技术博文，主角是一种叫做指数退避的算法。还是按照以往的惯例，这篇文章会从问题的发生至问题的解决记一个流水账。
-问题的场景发生业务系统中的 RPC 调用中，需求是希望如果一个 RPC 调用失败了，能够进行重试。
-作为一个菜鸟，我很快写入了第一个版本，用 Go 语言描述出来的逻辑如下：
-func retry(maxRetry int, f func() error) {
-    for i:=0;i&amp;lt;maxRetry;i++ {
-        err := f()
-        if err == nil {
-          return 
-        }
-    }
-}
-
-很快这种代码在 review 的时候就被打下来了。理由是作为网络调用，这种重试机制是不合理的。试想以下如果是遇到机器重启或者网络抖动，对方的服务要在 1 分钟甚至更久之后才能恢复正常，那么将重试放在一个没有停歇的 for 循环里面，试错的机会很快就会被用完。
-mentor 提示我可以试下指数退避算法（exponential backoff），网上看了一些算法的介绍，很快就写了第二个版本出来。
-逻辑还是差不多，只不过多了一步休眠的操作：
-func retry(maxRetry int, f func() error) {
-    for i:=0;i&amp;lt;maxRetry;i++ {
-        err := f()
-        if err == nil {
-          return 
-        }
-        // calculate the dynamic duration
-        dur := call()
-
-        time.Sleep(dur)
-    }
-}
-
-算法的核心在于计算出重试的间隔，如果重试失败，那么就要相应得延长下次重试的时间。
-重试间隔计算公式如下：
-sleep = min(cap, base * 2 ** attempt)
-随着重试次数 attempt 的增加，sleep 的数值会出现指数级的变化。
-对于一些服务比如涉及到事务的数据库操作，如果有多个 client 同时使用上面这条公式的话，会出现请求挤压的情况导致系统的整体吞吐量下降，这时候我们可以引入一个随机因子避免该问题，经过修改的公式如下：
-sleep = random_between(0, min(cap, base * 2 ** attempt))
-如果你使用的是Go，推荐下这个库：https://github.com/cenkalti/backoff
-
-                                        </div>
-                                        
-                                            <a class="btn btn-text" href="https://lwhile.github.io/post/exponential-backoff">Read More ~</a>
-                            </div>
-                </div>
-            </article>
-            
-            <article class="post i-card">
-                <h2 class="post-title">
-                    <a href="https://lwhile.github.io/post/new-job">
-                        换了一份新工作
-                    </a>
-                </h2>
-                <div class="post-info">
-                    <time class="post-time">2018-03-24</time>
-                    
-                        <a href="https://lwhile.github.io/tag/sui-sui-nian" class="post-tag i-tag
-                            i-tag-success">
-            #碎碎念
-        </a>
-                        
-                </div>
-                <div class="post-article">
-                    
-                        <a href="https://lwhile.github.io/post/new-job" class="post-feature-image" style="background-image:url(https://lwhile.github.io/post-images/new-job.jpeg) ">
-                        </a>
-                        
-                            <div class="post-content">
-                                
-                                        <div class="post-content-content">
-                                            去年的最后一天，我辞去了第一份有正式薪水的工作，带着疲惫和对未来的思考离开了广州，一晃4个月就要过去了。
-很感谢老东家带给我的成长机会，尤其是H哥。在老东家最后的几个月里我也想了很多未来发展的问题，这个问题经常搞定我夜不能寐。
-在广州离职后我第一个想进入的行业是计算广告行业。想选择它的原因是这个行业上接社会的商业运行（广告），下接各种技术应用场景，比如大数据和人工智能，甚至区块链。对我来说我更喜欢站在各行各业的交叉点上面。第二个想去的是工业互联网。选择这个是因为目前工业界确实存在生产效率的问题，程序员可以用自己的专业知识帮助工厂提高生产效率。如果说阿里和京东的程序员提高了商品从生产出来到消费者手中的流转效率，微信、新浪的程序员提高了人类之间信息的传达效率，那么从工业互联网这方面入手，提高的将会是商品生产过程中的效率，这对社会的发展是有好处的。
-当然后来两个行业都没去成，有点小遗憾。现在加入了一家美国券商在深圳的技术部门，算是一只脚踏在IT，一只脚踏在金融。当初这家公司最吸引我的一个地方他们给我的 offer 很与众不同，在这里我能经历一些别人体验不到的东西。比如我的上班时间可以自由选择，工资拿的是美金，并且有一个国际化的团队，我现在甚至开始练习英语口语了。这样一个环境能大大提高我的视野。比如因为薪水的关系，最开始我只是想知道汇率接下来的行情，结果没想到顺着这条路开始关注宏观经济，进而去了解国内和国际之间的政治局势和经济发展。这点就是我一直都想要的——提高我对这个世界的认知能力。
-选择这家公司对于我是不是最优选择，说实话我心里并没有底。这家公司主要用Go，Python，C++做交易系统。面试的时候侧重点在项目经验上，这点对于我这个应届生算是有点优势。来之后发现这家公司在DevOps上面的水平做得非常不错。公司就在腾讯附近，左边能看到旧的总部，右边能看到它们新的滨海大厦。每天坐到工位上的时候，我就在想那些在校招中干掉我进入腾讯的同学们现在在干嘛、今天它们能得到什么成长、它们还在加班吗。每每想到这点我就不敢懈怠。
-对于未来的计划，在技术上，一方面我还是想提高自己的编码能力，这个没得选，就是多写，并且写有难度的代码。另一个还是想学习下 elixir / erlang，然后系统得学习下分布式系统。我一直认为计算机科学家设计的分布式系统里面，蕴藏着一部分社会运行的奥秘。
-今年将是我毕业后正式脱离学生身份的第一年，接下来可谓任重而道远。感激那些在我成长路上帮助过我、包容过我的人。
-
-
-                                        </div>
-                                        
-                                            <a class="btn btn-text" href="https://lwhile.github.io/post/new-job">Read More ~</a>
-                            </div>
-                </div>
-            </article>
-            
                 <!-- 翻页 -->
                 
-    <div class="pagination-container">
-        
-                
-                    <a href="https://lwhile.github.io/page/2/" class="page-btn btn">下一页</a>
-                    
-    </div>
-    
                 </div>
                 <!--  -->
                 <div class="main-container-middle"></div>

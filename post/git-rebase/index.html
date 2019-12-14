@@ -1,0 +1,332 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>
+    git rebase 使用总结 | 神蛋杂谈
+</title>
+<link rel="shortcut icon" href="https://lwhile.github.io/favicon.ico?v=1576341339502">
+<!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
+<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://lwhile.github.io/styles/main.css">
+<!-- js -->
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://lwhile.github.io/media/js/jquery.sticky-sidebar.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+
+        
+</head>
+
+<body>
+    <div class="main">
+        <div class="header">
+    <div class="nav">
+        <div class="logo">
+            <a href="https://lwhile.github.io">
+                <img class="avatar" src="https://lwhile.github.io/images/avatar.png?v=1576341339502" alt="">
+            </a>
+            <div class="site-title">
+                <h1>
+                    神蛋杂谈
+                </h1>
+            </div>
+        </div>
+        <span class="menu-btn fa fa-align-justify"></span>
+        <div class="menu-container">
+            <ul>
+                
+                    
+                            <li>
+                                <a href="/" class="menu">
+                                    首页
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/archives" class="menu">
+                                    归档
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/tags" class="menu">
+                                    标签
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/post/about" class="menu">
+                                    关于
+                                </a>
+                            </li>
+                            
+                                
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $(".menu-btn").click(function() {
+            $(".menu-container").slideToggle();
+        });
+        $(window).resize(function() {
+
+            if (window.matchMedia('(min-width: 960px)').matches) {
+                $(".menu-container").css('display', 'block')
+            } else {
+                $(".menu-container").css('display', 'none')
+            }
+
+        });
+    });
+</script>
+
+            <div id="main-content" class="post-detail main-container">
+                <!-- left -->
+                <div id="content" class="main-container-left">
+                    <article class="post i-card">
+                        <h2 class="post-title">
+                            git rebase 使用总结
+                        </h2>
+                        <div class="post-info">
+                            <time class="post-time">2018-06-03</time>
+                            
+                                <a href="https://lwhile.github.io/tag/git" class="post-tag i-tag
+                            i-tag-info">
+                            #git
+                        </a>
+                                
+                        </div>
+                        
+                                <div class="post-content">
+                                    <p>今天来介绍下 git 的 rebase 命令。这个命令是我进入新公司之后才了解到的，以前还真的没使用过，尽管我接触 git 已经有 3 年了。</p>
+<p>假如现在有个项目，它的 git 状态是这样的：</p>
+<figure data-type="image" tabindex="1"><img src="https://upload-images.jianshu.io/upload_images/1244770-131a8010d6bc5132.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="git rebase 1.png"></figure>
+<p>OK，我们开始今天的内容。</p>
+<h2 id="分支合并">分支合并</h2>
+<p>我们先在 master 分支的基础上新建一个 dev 分支, 并做一个 commit：</p>
+<blockquote>
+<p>$(master) git checkout -b dev</p>
+</blockquote>
+<figure data-type="image" tabindex="2"><img src="https://upload-images.jianshu.io/upload_images/1244770-5b0ba97abe4caa8c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="git rebase 2.png"></figure>
+<p>这时候另外一个开发人员发现 master 上的代码有一个问题，对 master 的代码做了一个 fix，使得 master 的 head 向前推进了一步:</p>
+<figure data-type="image" tabindex="3"><img src="https://upload-images.jianshu.io/upload_images/1244770-732d3205e4754eb0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="git rebase 3.png"></figure>
+<p>如果我们想将 master 的 Fix 改动应用到 dev 分支上，要如何做呢？</p>
+<p>可以使用 merge，我们来试下：</p>
+<blockquote>
+<p>$(dev) git merge master</p>
+</blockquote>
+<figure data-type="image" tabindex="4"><img src="https://upload-images.jianshu.io/upload_images/1244770-adc5799363285d56.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="git rebase 4.png"></figure>
+<p>merge 过后 dev 分支向前推进了一步。我们看下多出来的 commit 信息是怎样的</p>
+<pre><code class="language-text">commit 02581b628586b29c5c8a3cfd04d1563fa4e5b5a7 (HEAD -&gt; dev)
+Merge: 18d26a0 8985e47
+Author: lwhile &lt;lwhile521@gmail.com&gt;
+Date:   Sun Jun 3 15:26:55 2018 +0800
+
+    Merge branch 'master' into dev
+</code></pre>
+<p>dev 上 多出来的这个 commit（绿色的那个节点）, 就是我们的 merge 信息。</p>
+<p>有时候我们并不想要 git 记录这个 merge 信息，因为让 git 的历史记录变得很繁琐，要如何做呢？可以使用 rebase ！</p>
+<p>我们先回到 master 提交了 fix 之后的 git 状态：</p>
+<figure data-type="image" tabindex="5"><img src="https://upload-images.jianshu.io/upload_images/1244770-b16935d0905e0514.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="git rebase 3.png"></figure>
+<p>执行 rebase 命令：</p>
+<blockquote>
+<p>$ (dev) git rebase master</p>
+</blockquote>
+<p>这时候看下 git 状态：</p>
+<figure data-type="image" tabindex="6"><img src="https://upload-images.jianshu.io/upload_images/1244770-03ff5004e5310811.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="git rebase 5.png"></figure>
+<p>比较下 merge 和 rebase 之后的状态图，我们可以发现 masste 的 fix 被接到 dev 的后面，并且没有多出一个 merge 信息。这样 commit 信息是不是简洁了很多？</p>
+<h2 id="commit-改写">commit 改写</h2>
+<p>除了用在分支的合并上， rebase 命令还能帮你修改 commit 记录。</p>
+<p>我们让 dev 分支再向前推进 3 步：</p>
+<figure data-type="image" tabindex="7"><img src="https://upload-images.jianshu.io/upload_images/1244770-7429413c99624bcf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="git rebase 6.png"></figure>
+<pre><code>╰─$ git log
+commit 6639f35cc779afe6f7eb68f13faad0cfe2a8a7a4 (HEAD -&gt; dev)
+Author: lwhile &lt;lwhile521@gmail.com&gt;
+Date:   Sun Jun 3 16:01:29 2018 +0800
+
+    add dev3.go
+
+commit c76ac0c0c0359170a6eca0ee1319ec16b2ae6351
+Author: lwhile &lt;lwhile521@gmail.com&gt;
+Date:   Sun Jun 3 16:01:10 2018 +0800
+
+    add dev2.go
+
+commit 20cd0cfcd64fee7c4459a1da527f8c2c239ac5e4
+Author: lwhile &lt;lwhile521@gmail.com&gt;
+Date:   Sun Jun 3 16:00:57 2018 +0800
+
+    add dev1.go
+</code></pre>
+<p>提交完这 3 个 commit 之后，我们发现这 3 个 commit 属于同一个改动类型，完全没必要分成 3 个 commit。</p>
+<p>那要怎么做呢？还是可以使用 rebase</p>
+<blockquote>
+<p>$ (dev) git rebase -i HEAD~4</p>
+</blockquote>
+<p>执行该命令 shell 会进入交互模式（-i）</p>
+<pre><code>pick c524f8e add dev.go
+pick 20cd0cf add dev1.go
+pick c76ac0c add dev2.go
+pick 6639f35 add dev3.go
+
+# Rebase df58ee3..6639f35 onto df58ee3 (4 commands)
+#
+# Commands:
+# p, pick = use commit
+# r, reword = use commit, but edit the commit message
+# e, edit = use commit, but stop for amending
+# s, squash = use commit, but meld into previous commit
+# f, fixup = like &quot;squash&quot;, but discard this commit's log message
+# x, exec = run command (the rest of the line) using shell
+# d, drop = remove commit
+#
+# These lines can be re-ordered; they are executed from top to bottom.
+#
+# If you remove a line here THAT COMMIT WILL BE LOST.
+#
+# However, if you remove everything, the rebase will be aborted.
+#
+# Note that empty commits are commented out
+</code></pre>
+<p>根据提示，我们将文本做如下修改(将 pick 换成 s,至于为什么要这样写，可以看 git 的提示)：</p>
+<pre><code>pick c524f8e add dev.go
+s 20cd0cf add dev1.go
+s c76ac0c add dev2.go
+s 6639f35 add dev3.go
+</code></pre>
+<p>保存并退出：</p>
+<pre><code>[detached HEAD 0a15d35] add dev.go
+ Date: Sun Jun 3 15:38:35 2018 +0800
+ 4 files changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 dev.go
+ create mode 100644 dev1.go
+ create mode 100644 dev2.go
+ create mode 100644 dev3.go
+Successfully rebased and updated refs/heads/dev.
+</code></pre>
+<p>现在 git 又进入了如下状态，只不过绿色的那个节点包含了 4 个 commit 信息</p>
+<figure data-type="image" tabindex="8"><img src="https://upload-images.jianshu.io/upload_images/1244770-30628fff5c8957b1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="git rebase 5.png"></figure>
+<pre><code>commit 0a15d3549ee9ec61ddeb33916c452fab2ad9b991 (HEAD -&gt; dev)
+Author: lwhile &lt;lwhile521@gmail.com&gt;
+Date:   Sun Jun 3 15:38:35 2018 +0800
+
+    add dev.go
+
+    add dev1.go
+
+    add dev2.go
+
+    add dev3.go
+
+</code></pre>
+<p>这时候再将 dev 合并进 master，commit 信息都会简洁很多，并且也有利于 review。</p>
+<h2 id="总结">总结</h2>
+<p>rebase 是一个很神奇的工具，可以帮你做一些比较特别的改动。但要注意， rebase 是会隐藏你真实的修改记录的，所以最后呈现出来的 git 历史并不能表现你的真实操作，这点要注意。</p>
+
+                                </div>
+                    </article>
+                    <!--  -->
+                    
+                        <div class="next-post">
+                            <div class="next">下一篇</div>
+                            <a href="https://lwhile.github.io/post/mundell-triangle">
+                                <h3 class="post-title">
+                                    货币知识入门：蒙代尔不可能三角
+                                </h3>
+                            </a>
+                        </div>
+                        
+                            <div id="disqus_thread"></div>
+                            <div id="gitalk-container"></div>
+                </div>
+                <!-- middle -->
+                <div class="main-container-middle"></div>
+                <!-- right -->
+                <div id="sidebar" class="main-container-right">
+                    
+                        <!-- toc -->
+                        
+    <div class="toc-card i-card ">
+        <div class="toc-title i-card-title">目录</div>
+        <div class="toc-content">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%88%86%E6%94%AF%E5%90%88%E5%B9%B6">分支合并</a></li>
+<li><a href="#commit-%E6%94%B9%E5%86%99">commit 改写</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+        <script>
+            function locateCatelogList() {
+                /*获取文章目录集合,可通过:header过滤器*/
+                var alis = $('.post-content :header');
+                /*获取侧边栏目录列表集合**/
+                var sidebar_alis = $('.markdownIt-TOC a');
+                /*获取滚动条到顶部的距离*/
+                var scroll_height = $(window).scrollTop();
+                for (var i = 0; i < alis.length; i++) {
+                    /*获取锚点集合中的元素分别到顶点的距离*/
+                    var a_height = $(alis[i]).offset().top;
+                    if (a_height < scroll_height) {
+                        /*高亮显示*/
+                        sidebar_alis.removeClass('on');
+                        $(sidebar_alis[i]).addClass('on');
+                    }
+                }
+            }
+            $(function() {
+                /*绑定滚动事件 */
+                $(window).bind('scroll', locateCatelogList);
+            });
+        </script>
+    </div>
+    
+                            
+
+                </div>
+
+
+
+
+            </div>
+
+
+            <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="https://lwhile.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+
+    </div>
+    <script>
+        $('#sidebar').stickySidebar({
+            topSpacing: 80,
+            // bottomSpacing: 60
+        });
+    </script>
+    
+</body>
+
+</html>
