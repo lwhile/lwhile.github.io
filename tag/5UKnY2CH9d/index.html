@@ -1,190 +1,278 @@
-<!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" >
 
-<title>Go | 神蛋杂谈</title>
-<meta name="description" content="">
-
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<link rel="shortcut icon" href="lwhile.github.io/favicon.ico?v=1576337831409">
-
-<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="stylesheet" href="https://unpkg.com/papercss@1.6.1/dist/paper.min.css" />
+<head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>
+    Go | 神蛋杂谈
+</title>
+<link rel="shortcut icon" href="lwhile.github.io/favicon.ico?v=1576338065235">
+<!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
+<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
 <link rel="stylesheet" href="lwhile.github.io/styles/main.css">
-
-
+<!-- js -->
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+<script src="lwhile.github.io/media/js/jquery.sticky-sidebar.min.js"></script>
 <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
 
 
-<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+</head>
 
-
-  </head>
-  <body>
-    <nav class="navbar border fixed split-nav">
-  <div class="nav-brand">
-    <h3><a href="lwhile.github.io">神蛋杂谈</a></h3>
-  </div>
-  <div class="collapsible">
-    <input id="collapsible1" type="checkbox" name="collapsible1">
-    <button>
-      <label for="collapsible1">
-        <div class="bar1"></div>
-        <div class="bar2"></div>
-        <div class="bar3"></div>
-      </label>
-    </button>
-    <div class="collapsible-body">
-      <ul class="inline">
-        
-          <li>
-            
-              <a href="/" class="menu">
-                首页
-              </a>
-            
-          </li>
-        
-          <li>
-            
-              <a href="/archives" class="menu">
-                归档
-              </a>
-            
-          </li>
-        
-          <li>
-            
-              <a href="/tags" class="menu">
-                标签
-              </a>
-            
-          </li>
-        
-          <li>
-            
-              <a href="/post/about" class="menu">
-                关于
-              </a>
-            
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-</nav>
-
-    <div id="top" class="row site">
-      <div class="sm-12 md-8 col">
-        <div class="paper">
-          <h2 class="current-tag">标签: Go</h2>
-          
-  <article class="article">
-    <h2 class="article-title">
-      <a href="lwhile.github.io/post/go-shi-qu-yong-fa-zong-jie">Go 时区用法总结</a>
-    </h2>
-    <p class="article-meta">
-      2019-02-19
-      
-        <a href="lwhile.github.io/tag/GQVNWsaTp" class="badge success">
-          计算机
-        </a>
-      
-        <a href="lwhile.github.io/tag/5UKnY2CH9d" class="badge secondary">
-          Go
-        </a>
-      
-    </p>
-    <p class="text-lead">
-      
-    </p>
-    <div class="row">
-      <a href="lwhile.github.io/post/go-shi-qu-yong-fa-zong-jie" class="readmore-link">
-        <button>
-          Read More
-        </button>
-      </a>
-    </div>
-  </article>
-
-
+<body>
+    <div class="main">
+        <div class="header">
+    <div class="nav">
+        <div class="logo">
+            <a href="lwhile.github.io">
+                <img class="avatar" src="lwhile.github.io/images/avatar.png?v=1576338065235" alt="">
+            </a>
+            <div class="site-title">
+                <h1>
+                    神蛋杂谈
+                </h1>
+            </div>
         </div>
-        <div class="row flex-edges">
-  
-  
+        <span class="menu-btn fa fa-align-justify"></span>
+        <div class="menu-container">
+            <ul>
+                
+                    
+                            <li>
+                                <a href="/" class="menu">
+                                    首页
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/archives" class="menu">
+                                    归档
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/tags" class="menu">
+                                    标签
+                                </a>
+                            </li>
+                            
+                                
+                    
+                            <li>
+                                <a href="/post/about" class="menu">
+                                    关于
+                                </a>
+                            </li>
+                            
+                                
+            </ul>
+        </div>
+    </div>
 </div>
 
-      </div>
-      <div class="sm-12 md-4 col sidebar">
-  <div class="paper info-container">
-    <img src="lwhile.github.io/images/avatar.png?v=1576337831409" class="no-responsive avatar">
-    <div class="text-muted"></div>
-    <div class="social-container">
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    </div>
-  </div>
-  <div class="paper">
-    <div class="sidebar-title">
-      最新文章
-    </div>
-    <div class="row">
-      <ul>
-        
-          
-            <li>
-              <a href="lwhile.github.io/post/go-shi-qu-yong-fa-zong-jie">Go 时区用法总结</a>
-            </li>
-          
-        
-      </ul>
-    </div>
-  </div>
-  <div class="paper">
-    <div class="sidebar-title">
-      标签列表
-    </div>
-    <div class="row">
-      
-        <a href="lwhile.github.io/tag/GQVNWsaTp" class="badge ">
-          计算机
-        </a>
-      
-        <a href="lwhile.github.io/tag/5UKnY2CH9d" class="badge warning">
-          Go
-        </a>
-      
-    </div>
-  </div>
-  <div class="paper">
-    Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
-  </div>
-</div>
+<script>
+    $(document).ready(function() {
+        $(".menu-btn").click(function() {
+            $(".menu-container").slideToggle();
+        });
+        $(window).resize(function() {
 
-    </div>
+            if (window.matchMedia('(min-width: 960px)').matches) {
+                $(".menu-container").css('display', 'block')
+            } else {
+                $(".menu-container").css('display', 'none')
+            }
 
-    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-
-<script type="application/javascript">
-
-AOS.init();
-
-hljs.initHighlightingOnLoad()
-
+        });
+    });
 </script>
 
+            <div id="main-content" class="post-container main-container">
+                <div id="content" class="main-container-left">
+                    
+    <div class="i-card">
+        <b>标签：#
+        Go</b>
+    </div>
+    
+        
+            <article class="post i-card">
+                <h2 class="post-title">
+                    <a href="lwhile.github.io/post/go-shi-qu-yong-fa-zong-jie">
+                        Go 时区用法总结
+                    </a>
+                </h2>
+                <div class="post-info">
+                    <time class="post-time">2019-02-19</time>
+                    
+                        <a href="lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
+                            i-tag-info">
+            #计算机
+        </a>
+                        
+                        <a href="lwhile.github.io/tag/5UKnY2CH9d" class="post-tag i-tag
+                            i-tag-success">
+            #Go
+        </a>
+                        
+                </div>
+                <div class="post-article">
+                    
+                            <div class="post-content">
+                                
+                                        <div class="post-content-content">
+                                            坊间有个说法，说中美两国的程序员除了薪资、加班强度外，还有个比较有趣的差异，就是在编码时对于时区的敏感程度也不同。
+「大部分」美国程序员在时区问题上很有经验，因为美国在日常生活中会使用到 3 个时区。而中国「大部分」程序员在编码时基本不会考虑时区问题，因为大家都在东八区，没那个烦恼。
+在过去一年我维护着一个公司内部的日历库，用于做交易时间的计算。在这个过程中被时区问题折磨得很难受，不过也积累一些 Go 处理时区上的经验。
+时区配置
+时区的配置一定要声明在配置文件中，比如下面这种 yaml 格式：
+
+timezone: Asia/Hong_Kong
+
+别想着用机器时区一劳永逸这个问题，因为机器的变数太多了。
+载入时区
+在 Go 中，时区被封装在 time.Location 中进行抽象，而载入时区有两种方法
+
+通过 IANA 数据库
+
+给 time.LoadLocation 传入一个符合 IANA 时区数据库的时区名字，比如：
+
+Asia/Hong_Kong
+
+
+通过偏移量
+
+time.FixedZone(&amp;quot;UTC-8&amp;quot;, -8 **60 **60)
+转换时区
+比较简单的操作，直接调一个 time struct instance 的 In(*Location) 方法。
+修改时区
+注意修改时区和转换时区是两种不同的概念。
+比如北京时间 20:00pm 转换时区，以美东时区为例，会是 7:00am (冬令时)
+而修改时区是指把北京 20:00pm 修改为美东 20:00pm，可以这样操作：
+
+// Pseudo code
+var estTime time.Time
+var cstTime time.Time
+var estTimezone *time.Location
+// 通过 time.Date 方法重新生成一个 time struct instance
+estTime := time.Date(cstTime.Year(), cstTime.Month(),..., estTimezone)
+
+Round to day
+实在想不起一个名词可以形容 Round to day 的过程，我们用这个方法来做日内时间的比较。
+比较典型的应用场景是判断是否到了开市/休市时间。由于在 Go 中 time 类型是包含有年、月信息的，所以要表达「每天早上 9:30」 这个时间不大好做。
+既然不好做，那就把它们去掉。
+
+// Pseudo code
+func RoundToDay(t time.Time) time.Time {
+// 注意在 Go 中 zero time 并不是 0 year 0 month 0 day，而是 1，所以用 0 的话会溢出喔
+return time.Date(1,1,t.Day(), t.Hour() ...)
+}
+
+LMT
+LMT 这个问题是在 Round to day 上面引发出来的，说起来也很有趣。LMT 本意是指 local mean time（地方平时，在指定的经度范围内使用一致时间的地方太阳时）。
+如果你用试图在 Go 里面用香港时区构建一个 zero time 的话，就会发现最后返回出来的 time struct instance 的 location 信息是 LMT。这个问题是在一处单元测试中发现的，死活无法通过测试（嗯，单测真的很重要）。
+不过这是为什么？
+我相信知道这个知识点的人绝对少之又少，这是一个非常非常冷的知识（最后通过我那位知识储备量非常丰富的同事知道的这个）
+
+香港時間的授時服務，是香港天文台從1883年成立至今的主要職責。早期香港天文台使用赤道儀及中星儀，透過觀測星象測量時間。當時香港時間是當地平均時間（LMT）UTC+7:36:42（準確值為UTC+7:36:41.8842）。香港天文台最早於1885年1月1日對公眾授時[1]，當年香港天文台於九龍尖沙咀警署設置桅杆，以升降時間球的方式對外發布時間。1885年1月1日，香港天文台於中午12時50分把時間球升到桅杆頂端，然後於下午1時正，首次把時間球降下，成為香港首次報時訊號，並作為香港時間的標準。用於報時的時間球訊號塔，後來於1933年因為電台報時的開展而拆除。1904年10月30日，香港時間正式確定為格林威治標準時間快8小時（GMT+8）[2]。2004年，天文台安裝了一套高準確度授時系統，利用全球定位系統共視方法，向國際度量衡局提供天文台的原子鐘時間數據，參與訂定協調世界時。天文台亦根據國際度量衡局提供的時間數據調校原子鐘，使其準確度保持在一百萬分之一秒以內。現時，香港天文台以銫原子鐘報時系統作為香港時間的標準，誤差僅為每日1微秒之內。香港天文台設有互聯網時間伺服器，為互聯網的用戶提供準確的時間校正服務[3]。
+
+根据上面的记录来看几个例子吧，首先是 1904 年 10 月 30 日后香港使用 GMT+8，我们把时间定格在它前一秒：
+
+location, _ := time.LoadLocation(&amp;quot;Asia/Hong_Kong&amp;quot;)
+
+t := time.Date(1904,10,29,11,59,59,59,location)
+fmt.Println(t) // 1904-10-29 11:59:59.000000059 +0736 LMT &amp;lt;- LMT 无疑
+然后是 1904 年 10 月 30 日 零点：
+
+location, _ := time.LoadLocation(&amp;quot;Asia/Hong_Kong&amp;quot;)
+
+t := time.Date(1904,10,30,0,0,0,0,location)
+fmt.Println(t) // 1904-10-30 00:23:18 +0800 HKT &amp;lt;- HKT 了。
+厉害吧。。。还有更厉害的。。。
+
+location, _ := time.LoadLocation(&amp;quot;Asia/Hong_Kong&amp;quot;)
+
+t := time.Date(1942,10,30,0,0,0,0,location)
+fmt.Println(t) // 1942-10-30 00:00:00 +0900 JST
+用 1942 年 10 月 30 日构建一个香港时间，时区会是（JST）日本标准时间。Why?
+
+原因是这个：
+
+香港日佔時期，又稱為香港日治時期或香港淪陷時期，是指第二次世界大戰時大日本帝國軍事占領香港的時期：由1941年12月25日香港總督楊慕琦投降起，至1945年8月15日日本無條件投降為止；香港人俗稱這段時期為「三年零八個月」。
+
+别以为 Go 的开发团队这么有心，实际上 Go 也是读操作系统的 zoneinfo 文件。只能说在某个层面上操作系统也记录着每个地区的历史。。。
+
+                                        </div>
+                                        
+                                            <a class="btn btn-text" href="lwhile.github.io/post/go-shi-qu-yong-fa-zong-jie">Read More ~</a>
+                            </div>
+                </div>
+            </article>
+            
+                <!-- 翻页 -->
+                
+                </div>
+                <!--  -->
+                <div class="main-container-middle"></div>
+                <!--  -->
+                <div id="sidebar" class="main-container-right">
+
+                    <!-- 个人信息 -->
+                    
+    <div class="id_card i-card">
+        <div class="id_card-avatar" style="background-image: url(lwhile.github.io/images/avatar.png?v=1576338065235)">
+        </div>
+        <h1 class="id_card-title">
+            神蛋杂谈
+        </h1>
+        <h2 class="id_card-description">
+            
+        </h2>
+        <!--  -->
+        <div class="id_card-sns">
+            <!-- github -->
+            
+                    <!-- twitter -->
+                    
+                            <!-- weibo -->
+                            
+                                    <!-- facebook -->
+                                    
+
+        </div>
+    </div>
+    
+
+                        <!-- 公告栏 -->
+                        
+
+                </div>
+            </div>
 
 
 
-  </body>
+            <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | 
+  <a class="rss" href="lwhile.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+    <script>
+        $('#sidebar').stickySidebar({
+            topSpacing: 80,
+            // bottomSpacing: 60
+        });
+    </script>
+</body>
+
 </html>
