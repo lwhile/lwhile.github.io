@@ -5,7 +5,7 @@
 <meta name="description" content="" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>
-    换了一份新工作 | 神蛋杂谈
+    日志切分问题有感 | 神蛋杂谈
 </title>
 <link rel="shortcut icon" href="https://lwhile.github.io/favicon.ico?v=1576341434272">
 <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
@@ -99,43 +99,32 @@
                 <div id="content" class="main-container-left">
                     <article class="post i-card">
                         <h2 class="post-title">
-                            换了一份新工作
+                            日志切分问题有感
                         </h2>
                         <div class="post-info">
-                            <time class="post-time">2018-03-24</time>
+                            <time class="post-time">2017-11-05</time>
                             
-                                <a href="https://lwhile.github.io/tag/sui-sui-nian" class="post-tag i-tag
-                            i-tag-other_4">
-                            #碎碎念
+                                <a href="https://lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
+                            i-tag-primary">
+                            #计算机
                         </a>
                                 
                         </div>
                         
-                            <div class="post-feature-image" style="background-image: url('https://lwhile.github.io/post-images/new-job.jpeg')"></div>
-                            
                                 <div class="post-content">
-                                    <p>去年的最后一天，我辞去了第一份有正式薪水的工作，带着疲惫和对未来的思考离开了广州，一晃4个月就要过去了。</p>
-<p>很感谢老东家带给我的成长机会，尤其是H哥。在老东家最后的几个月里我也想了很多未来发展的问题，这个问题经常搞定我夜不能寐。</p>
-<p>在广州离职后我第一个想进入的行业是计算广告行业。想选择它的原因是这个行业上接社会的商业运行（广告），下接各种技术应用场景，比如大数据和人工智能，甚至区块链。对我来说我更喜欢站在各行各业的交叉点上面。第二个想去的是工业互联网。选择这个是因为目前工业界确实存在生产效率的问题，程序员可以用自己的专业知识帮助工厂提高生产效率。如果说阿里和京东的程序员提高了商品从生产出来到消费者手中的流转效率，微信、新浪的程序员提高了人类之间信息的传达效率，那么从工业互联网这方面入手，提高的将会是商品生产过程中的效率，这对社会的发展是有好处的。</p>
-<p>当然后来两个行业都没去成，有点小遗憾。现在加入了一家美国券商在深圳的技术部门，算是一只脚踏在IT，一只脚踏在金融。当初这家公司最吸引我的一个地方他们给我的 offer 很与众不同，在这里我能经历一些别人体验不到的东西。比如我的上班时间可以自由选择，工资拿的是美金，并且有一个国际化的团队，我现在甚至开始练习英语口语了。这样一个环境能大大提高我的视野。比如因为薪水的关系，最开始我只是想知道汇率接下来的行情，结果没想到顺着这条路开始关注宏观经济，进而去了解国内和国际之间的政治局势和经济发展。这点就是我一直都想要的——提高我对这个世界的认知能力。</p>
-<p>选择这家公司对于我是不是最优选择，说实话我心里并没有底。这家公司主要用Go，Python，C++做交易系统。面试的时候侧重点在项目经验上，这点对于我这个应届生算是有点优势。来之后发现这家公司在DevOps上面的水平做得非常不错。公司就在腾讯附近，左边能看到旧的总部，右边能看到它们新的滨海大厦。每天坐到工位上的时候，我就在想那些在校招中干掉我进入腾讯的同学们现在在干嘛、今天它们能得到什么成长、它们还在加班吗。每每想到这点我就不敢懈怠。</p>
-<p>对于未来的计划，在技术上，一方面我还是想提高自己的编码能力，这个没得选，就是多写，并且写有难度的代码。另一个还是想学习下 elixir / erlang，然后系统得学习下分布式系统。我一直认为计算机科学家设计的分布式系统里面，蕴藏着一部分社会运行的奥秘。</p>
-<p>今年将是我毕业后正式脱离学生身份的第一年，接下来可谓任重而道远。感激那些在我成长路上帮助过我、包容过我的人。</p>
-<figure data-type="image" tabindex="1"><img src="https://lwhile.github.io/post-images/1576340629482.jpeg" alt=""></figure>
+                                    <p>有过服务端开发经验的同学应该对日志这个东西不陌生, 把程序丢到服务器上跑, 日志就是我们了解运行情况,甚至解BUG的唯一入口了.</p>
+<p>有些程序的日志量会增长得非常快, 比如Nginx, 当一个日志文件大到几百MB甚至上GB的时候, 要从这个文件找出我们要的信息就基本等于大海捞针了,所以这时候对日志进行管理就显得格外重要.</p>
+<p>日志量大的平台可以上ELK,利用ES的搜索优势基本不担心日志数据量大的问题.但本文不打算涉及这方面的内容.接下来主要讲讲如何正确得对日志文件做切分.</p>
+<p>Linxu上的日志切分有两种形式, 一种是使用Linux的logrotate工具, 另外一种是使用额外编写的脚本, 这种形式一般是和日志库配合使用.</p>
+<p>因为业务的关系, 我们最开始抛弃了使用logrotate的方案, 因为我们觉得这会给实施人员增加系统的的维护负担(后来发现是我们对logrotate不够了解).于是我们使用第二种方案, 将日志的切分操作在我们的日志库里面实现, 我们封装了<a href="https://github.com/sirupsen/logrus">logrus</a>和<a href="https://github.com/rifflock/lfshook">lfshook</a>, 利用logrus的hook机制将切分的逻辑嵌入在日志库里面,代码调用的时候会自动触发切分操作.我们会这样做也是受到beego框架的影响, 它的日志库默认就带了切分功能.</p>
+<p>一切运作得很顺利, 直到我们有一次在使用Openresty的时候, 发现Nginx的日志没有被切分.因为之前使用Nginx的时候,默认安装完毕后日志是会自动以天切分的, 于是我们开始找Nginx的配置项,看看是否漏掉了某些配置.但是不找没关系,了解后才发现Nginx是不提供日志切分功能的.What ? 那之前的切分功能是怎么来的?</p>
+<p>接下来解决问题的过程中发现了在/etc/logrotate.d/下有nginx的配置, 同时还有Mysql和其他基础组件的,这时我们才想到有可能是RPM包(我们的系统是Centos)安装的时候自动生成了一个logrotate的配置文件,后来一查果然是(命令:<code>rpm -qpl xxx.rpm</code>).而我们的Openresty包没有生成这个配置文件,所以导致Nginx的日志文件没有被切分.</p>
+<p>实际上很多软件都只会做日志的记录,不会帮忙做切分,这个确实是合理的.这让我们想起logrus为什么不提供日志切分的功能,而是得由第三方的库去完成.我们将日志切分的逻辑耦合进代码里面,现在回过头来看其实也不是很合理,正确的做法其实还是应该在打RPM包的时候, 生成一个logrotate的配置文件, 这样一来也不会增加实施人员的负担,而且也可以将切分功能统一到一个地方去做.</p>
 
                                 </div>
                     </article>
                     <!--  -->
                     
-                        <div class="next-post">
-                            <div class="next">下一篇</div>
-                            <a href="https://lwhile.github.io/post/raft-sharing">
-                                <h3 class="post-title">
-                                    公司 raft 算法分享会内容
-                                </h3>
-                            </a>
-                        </div>
-                        
                             <div id="disqus_thread"></div>
                             <div id="gitalk-container"></div>
                 </div>
