@@ -7,7 +7,7 @@
 <title>
     神蛋杂谈
 </title>
-<link rel="shortcut icon" href="lwhile.github.io/favicon.ico?v=1576338304665">
+<link rel="shortcut icon" href="lwhile.github.io/favicon.ico?v=1576338655939">
 <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
 <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
@@ -27,7 +27,7 @@
     <div class="nav">
         <div class="logo">
             <a href="lwhile.github.io">
-                <img class="avatar" src="lwhile.github.io/images/avatar.png?v=1576338304665" alt="">
+                <img class="avatar" src="lwhile.github.io/images/avatar.png?v=1576338655939" alt="">
             </a>
             <div class="site-title">
                 <h1>
@@ -99,6 +99,41 @@
         
             <article class="post i-card">
                 <h2 class="post-title">
+                    <a href="lwhile.github.io/post/for-developer">
+                        致开发人员
+                    </a>
+                </h2>
+                <div class="post-info">
+                    <time class="post-time">2019-11-06</time>
+                    
+                </div>
+                <div class="post-article">
+                    
+                            <div class="post-content">
+                                
+                                        <div class="post-content-content">
+                                            「软技能:代码之外的生存指南」在开头部分有几句话,我看了之后觉得很棒,于是摘抄下来激励自己.
+
+谨以本书献给所有自强不息,孜孜不倦地持续自我改进的开发人员,他们具备以下素质:
+永远不会对&amp;quot;不错&amp;quot;感到心满意足
+永远寻求每一个机会来扩展自己的视野, 探索未知事物
+对知识的渴求永远不会熄灭
+笃信软件开发并不仅仅意味着编写代码
+知道失败不是结束,失败只是人生旅途上的小小一步
+有过挣扎,有过失败,但仍然会爬起来继续战斗
+拥有强烈意愿和决心,在人生的道路上不畏艰难
+以及最重要的,愿意一路上帮助他人
+
+
+                                        </div>
+                                        
+                                            <a class="btn btn-text" href="lwhile.github.io/post/for-developer">Read More ~</a>
+                            </div>
+                </div>
+            </article>
+            
+            <article class="post i-card">
+                <h2 class="post-title">
                     <a href="lwhile.github.io/post/go-shi-qu-yong-fa-zong-jie">
                         Go 时区用法总结
                     </a>
@@ -107,12 +142,12 @@
                     <time class="post-time">2019-02-19</time>
                     
                         <a href="lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
-                            i-tag-banana">
+                            i-tag-error">
             #计算机
         </a>
                         
                         <a href="lwhile.github.io/tag/5UKnY2CH9d" class="post-tag i-tag
-                            i-tag-error">
+                            i-tag-primary">
             #Go
         </a>
                         
@@ -220,7 +255,7 @@ fmt.Println(t) // 1942-10-30 00:00:00 +0900 JST
                     <time class="post-time">2018-04-02</time>
                     
                         <a href="lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
-                            i-tag-warning">
+                            i-tag-other_4">
             #计算机
         </a>
                         
@@ -273,6 +308,37 @@ sleep = random_between(0, min(cap, base * 2 ** attempt))
                 </div>
             </article>
             
+            <article class="post i-card">
+                <h2 class="post-title">
+                    <a href="lwhile.github.io/post/ri-zhi-qie-fen-wen-ti-you-gan">
+                        日志切分问题有感
+                    </a>
+                </h2>
+                <div class="post-info">
+                    <time class="post-time">2017-11-05</time>
+                    
+                </div>
+                <div class="post-article">
+                    
+                            <div class="post-content">
+                                
+                                        <div class="post-content-content">
+                                            有过服务端开发经验的同学应该对日志这个东西不陌生, 把程序丢到服务器上跑, 日志就是我们了解运行情况,甚至解BUG的唯一入口了.
+有些程序的日志量会增长得非常快, 比如Nginx, 当一个日志文件大到几百MB甚至上GB的时候, 要从这个文件找出我们要的信息就基本等于大海捞针了,所以这时候对日志进行管理就显得格外重要.
+日志量大的平台可以上ELK,利用ES的搜索优势基本不担心日志数据量大的问题.但本文不打算涉及这方面的内容.接下来主要讲讲如何正确得对日志文件做切分.
+Linxu上的日志切分有两种形式, 一种是使用Linux的logrotate工具, 另外一种是使用额外编写的脚本, 这种形式一般是和日志库配合使用.
+因为业务的关系, 我们最开始抛弃了使用logrotate的方案, 因为我们觉得这会给实施人员增加系统的的维护负担(后来发现是我们对logrotate不够了解).于是我们使用第二种方案, 将日志的切分操作在我们的日志库里面实现, 我们封装了logrus和lfshook, 利用logrus的hook机制将切分的逻辑嵌入在日志库里面,代码调用的时候会自动触发切分操作.我们会这样做也是受到beego框架的影响, 它的日志库默认就带了切分功能.
+一切运作得很顺利, 直到我们有一次在使用Openresty的时候, 发现Nginx的日志没有被切分.因为之前使用Nginx的时候,默认安装完毕后日志是会自动以天切分的, 于是我们开始找Nginx的配置项,看看是否漏掉了某些配置.但是不找没关系,了解后才发现Nginx是不提供日志切分功能的.What ? 那之前的切分功能是怎么来的?
+接下来解决问题的过程中发现了在/etc/logrotate.d/下有nginx的配置, 同时还有Mysql和其他基础组件的,这时我们才想到有可能是RPM包(我们的系统是Centos)安装的时候自动生成了一个logrotate的配置文件,后来一查果然是(命令:rpm -qpl xxx.rpm).而我们的Openresty包没有生成这个配置文件,所以导致Nginx的日志文件没有被切分.
+实际上很多软件都只会做日志的记录,不会帮忙做切分,这个确实是合理的.这让我们想起logrus为什么不提供日志切分的功能,而是得由第三方的库去完成.我们将日志切分的逻辑耦合进代码里面,现在回过头来看其实也不是很合理,正确的做法其实还是应该在打RPM包的时候, 生成一个logrotate的配置文件, 这样一来也不会增加实施人员的负担,而且也可以将切分功能统一到一个地方去做.
+
+                                        </div>
+                                        
+                                            <a class="btn btn-text" href="lwhile.github.io/post/ri-zhi-qie-fen-wen-ti-you-gan">Read More ~</a>
+                            </div>
+                </div>
+            </article>
+            
                 <!-- 翻页 -->
                 
                 </div>
@@ -284,7 +350,7 @@ sleep = random_between(0, min(cap, base * 2 ** attempt))
                     <!-- 个人信息 -->
                     
     <div class="id_card i-card">
-        <div class="id_card-avatar" style="background-image: url(lwhile.github.io/images/avatar.png?v=1576338304665)">
+        <div class="id_card-avatar" style="background-image: url(lwhile.github.io/images/avatar.png?v=1576338655939)">
         </div>
         <h1 class="id_card-title">
             神蛋杂谈

@@ -5,7 +5,7 @@
 <meta name="description" content="" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>
-    指数退避 | 神蛋杂谈
+    致开发人员 | 神蛋杂谈
 </title>
 <link rel="shortcut icon" href="lwhile.github.io/favicon.ico?v=1576338655939">
 <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"> -->
@@ -99,54 +99,26 @@
                 <div id="content" class="main-container-left">
                     <article class="post i-card">
                         <h2 class="post-title">
-                            指数退避
+                            致开发人员
                         </h2>
                         <div class="post-info">
-                            <time class="post-time">2018-04-02</time>
+                            <time class="post-time">2019-11-06</time>
                             
-                                <a href="lwhile.github.io/tag/GQVNWsaTp" class="post-tag i-tag
-                            i-tag-banana">
-                            #计算机
-                        </a>
-                                
                         </div>
                         
                                 <div class="post-content">
-                                    <p>这是加入新公司后的第一篇技术博文，主角是一种叫做指数退避的算法。还是按照以往的惯例，这篇文章会从问题的发生至问题的解决记一个流水账。</p>
-<p>问题的场景发生业务系统中的 RPC 调用中，需求是希望如果一个 RPC 调用失败了，能够进行重试。</p>
-<p>作为一个菜鸟，我很快写入了第一个版本，用 Go 语言描述出来的逻辑如下：</p>
-<pre><code class="language-go">func retry(maxRetry int, f func() error) {
-    for i:=0;i&lt;maxRetry;i++ {
-        err := f()
-        if err == nil {
-          return 
-        }
-    }
-}
-</code></pre>
-<p>很快这种代码在 review 的时候就被打下来了。理由是作为网络调用，这种重试机制是不合理的。试想以下如果是遇到机器重启或者网络抖动，对方的服务要在 1 分钟甚至更久之后才能恢复正常，那么将重试放在一个没有停歇的 for 循环里面，试错的机会很快就会被用完。</p>
-<p>mentor 提示我可以试下指数退避算法（exponential backoff），网上看了一些算法的介绍，很快就写了第二个版本出来。</p>
-<p>逻辑还是差不多，只不过多了一步休眠的操作：</p>
-<pre><code class="language-go">func retry(maxRetry int, f func() error) {
-    for i:=0;i&lt;maxRetry;i++ {
-        err := f()
-        if err == nil {
-          return 
-        }
-        // calculate the dynamic duration
-        dur := call()
-
-        time.Sleep(dur)
-    }
-}
-</code></pre>
-<p>算法的核心在于计算出重试的间隔，如果重试失败，那么就要相应得延长下次重试的时间。</p>
-<p>重试间隔计算公式如下：<br>
-sleep = min(cap, base * 2 ** attempt)</p>
-<p>随着重试次数 attempt 的增加，sleep 的数值会出现指数级的变化。</p>
-<p>对于一些服务比如涉及到事务的数据库操作，如果有多个 client 同时使用上面这条公式的话，会出现请求挤压的情况导致系统的整体吞吐量下降，这时候我们可以引入一个随机因子避免该问题，经过修改的公式如下：</p>
-<p>sleep = random_between(0, min(cap, base * 2 ** attempt))</p>
-<p>如果你使用的是Go，推荐下这个库：https://github.com/cenkalti/backoff</p>
+                                    <p>「软技能:代码之外的生存指南」在开头部分有几句话,我看了之后觉得很棒,于是摘抄下来激励自己.</p>
+<blockquote>
+<p>谨以本书献给所有自强不息,孜孜不倦地持续自我改进的开发人员,他们具备以下素质:<br>
+永远不会对&quot;不错&quot;感到心满意足<br>
+永远寻求每一个机会来扩展自己的视野, 探索未知事物<br>
+对知识的渴求永远不会熄灭<br>
+笃信软件开发并不仅仅意味着编写代码<br>
+知道失败不是结束,失败只是人生旅途上的小小一步<br>
+有过挣扎,有过失败,但仍然会爬起来继续战斗<br>
+拥有强烈意愿和决心,在人生的道路上不畏艰难<br>
+以及最重要的,愿意一路上帮助他人</p>
+</blockquote>
 
                                 </div>
                     </article>
@@ -154,9 +126,9 @@ sleep = min(cap, base * 2 ** attempt)</p>
                     
                         <div class="next-post">
                             <div class="next">下一篇</div>
-                            <a href="lwhile.github.io/post/ri-zhi-qie-fen-wen-ti-you-gan">
+                            <a href="lwhile.github.io/post/go-shi-qu-yong-fa-zong-jie">
                                 <h3 class="post-title">
-                                    日志切分问题有感
+                                    Go 时区用法总结
                                 </h3>
                             </a>
                         </div>
