@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://lwhile.github.io</id>
     <title>神蛋杂谈</title>
-    <updated>2019-12-15T02:56:27.647Z</updated>
+    <updated>2019-12-15T03:12:29.729Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://lwhile.github.io"/>
     <link rel="self" href="https://lwhile.github.io/atom.xml"/>
@@ -14,7 +14,7 @@
         <id>https://lwhile.github.io/post/brown-motion</id>
         <link href="https://lwhile.github.io/post/brown-motion">
         </link>
-        <updated>2019-07-20T16:34:04.000Z</updated>
+        <updated>2019-07-20T16:34:01.000Z</updated>
         <content type="html"><![CDATA[<p>布朗运动的发现源于19 世纪的植物学家罗伯特 • 布朗，他发现在显微镜中观察花粉微粒在水中的运动是无规则的；到了 20 世纪初期，爱因斯坦才详细解释了布朗运动：花粉微粒的无规则运动是水分子撞击形成的。在金融领域，布朗运动运动背后代表的随机过程被大量运用在 BSM 期权定价公式上，这也是我写这样一篇文章的原因。</p>
 <p>在市场中的一些人看来，市场的波动完全是随机的。这其中最出名的就是纳西姆·尼古拉斯·塔勒布，你可能没听说这个名字，但是你应该知道这几本书，《黑天鹅》，《随机致富的傻瓜》。他们都出自塔勒布之手。</p>
 <p>标准布朗运动 { B(t): t &gt; 0 } 的定义为：</p>
